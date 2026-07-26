@@ -18,7 +18,7 @@ export async function getDefaultLocationId(db: Db): Promise<string> {
     .select("id")
     .eq("name", DEFAULT_LOCATION_NAME)
     .single();
-  if (error || !data) {
+  if (error || !data?.id) {
     throw new Error(
       `default location "${DEFAULT_LOCATION_NAME}" not found — did the seed run?`,
     );

@@ -49,6 +49,6 @@ next-env.d.ts
 /supabase/.branches/
 /supabase/.temp/
 
-# generated types (regenerate after migrations via `pnpm gen:types`)
-/lib/db/database.types.ts
+# generated types — kept in git so CI can typecheck. Regenerate after every
+# migration via `pnpm gen:types`; the diff surfaces schema changes in the PR.
 
