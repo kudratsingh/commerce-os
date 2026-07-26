@@ -1,0 +1,21 @@
+/**
+ * Cloudflare Workers config for Commerce OS (Next.js via OpenNext).
+ * See docs/adr/ADR-005-supabase-cloudflare-platform.md for the platform decision.
+ * Secrets (SUPABASE_SERVICE_ROLE_KEY, WEBHOOK_SHARED_SECRET, ANTHROPIC_API_KEY)
+ * are set with `wrangler secret put` for deployed envs and `.dev.vars` locally.
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "commerce-os",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-08-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".open-next/assets"
+  },
+  "observability": {
+    "enabled": true
+  }
+  // "triggers": { "crons": ["* * * * *"] }   // enabled Day 2 with the outbox sweeper
+}

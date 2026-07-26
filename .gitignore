@@ -39,3 +39,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# cloudflare / opennext
+/.open-next/
+/.wrangler/
+.dev.vars
+
+# supabase local stack
+/supabase/.branches/
+/supabase/.temp/
+
+# generated types (regenerate after migrations via `pnpm gen:types`)
+/lib/db/database.types.ts
+

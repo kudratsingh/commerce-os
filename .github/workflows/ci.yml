@@ -1,0 +1,93 @@
+name: CI
+# Deployment runs separately via cloudflare/wrangler-action on main.
+# See docs/engineering-workflow.md section 5.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  quality:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder
+          SUPABASE_SERVICE_ROLE_KEY: ci-placeholder
+          WEBHOOK_SHARED_SECRET: ci-placeholder
+          ANTHROPIC_API_KEY: ci-placeholder
+
+  db-invariants:
+    name: Migrations from zero + invariant tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_URL: postgresql://postgres:postgres@127.0.0.1:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Stub Supabase auth schema (auth.jwt used by RLS policies)
+        run: |
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -c "
+            create schema if not exists auth;
+            create or replace function auth.jwt() returns jsonb
+            language sql stable as \$\$
+              select coalesce(
+                nullif(current_setting('request.jwt.claims', true), '')::jsonb,
+                '{}'::jsonb
+              )
+            \$\$;"
+
+      - name: Apply all migrations from zero, in order
+        run: |
+          for f in $(ls supabase/migrations/*.sql | sort); do
+            echo "== applying $f"
+            psql "$DB_URL" -v ON_ERROR_STOP=1 -f "$f"
+          done
+
+      - name: Run invariant tests (fail on any FAIL)
+        run: |
+          psql "$DB_URL" -f db/tests/invariants.sql | tee /tmp/invariants.log
+          if grep -q "FAIL" /tmp/invariants.log; then
+            echo "::error::Invariant test failure"
+            exit 1
+          fi
+          grep -c "PASS" /tmp/invariants.log
