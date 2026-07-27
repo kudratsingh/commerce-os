@@ -217,6 +217,120 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_creators: {
+        Row: {
+          accepted_at: string | null
+          agreed_deliverables: number
+          campaign_id: string
+          commission_bps: number
+          creator_id: string
+          status: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          agreed_deliverables?: number
+          campaign_id: string
+          commission_bps: number
+          creator_id: string
+          status?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          agreed_deliverables?: number
+          campaign_id?: string
+          commission_bps?: number
+          creator_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns_dashboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_creators_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaigns: {
+        Row: {
+          brand_id: string
+          budget_cents: number | null
+          created_at: string
+          ends_at: string | null
+          goal_gmv_cents: number | null
+          id: string
+          name: string
+          starts_at: string | null
+          status: string
+        }
+        Insert: {
+          brand_id: string
+          budget_cents?: number | null
+          created_at?: string
+          ends_at?: string | null
+          goal_gmv_cents?: number | null
+          id?: string
+          name: string
+          starts_at?: string | null
+          status?: string
+        }
+        Update: {
+          brand_id?: string
+          budget_cents?: number | null
+          created_at?: string
+          ends_at?: string | null
+          goal_gmv_cents?: number | null
+          id?: string
+          name?: string
+          starts_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "campaigns_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaigns_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "campaigns_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["brand_id"]
+          },
+        ]
+      }
       channel_inventory_reports: {
         Row: {
           channel_id: string
@@ -349,6 +463,196 @@ export type Database = {
         Update: {
           display_name?: string
           id?: string
+        }
+        Relationships: []
+      }
+      creator_touchpoints: {
+        Row: {
+          actor: string | null
+          created_at: string
+          creator_id: string
+          direction: string
+          id: number
+          kind: string
+          medium: string | null
+          notes: string | null
+          occurred_at: string
+        }
+        Insert: {
+          actor?: string | null
+          created_at?: string
+          creator_id: string
+          direction: string
+          id?: never
+          kind: string
+          medium?: string | null
+          notes?: string | null
+          occurred_at?: string
+        }
+        Update: {
+          actor?: string | null
+          created_at?: string
+          creator_id?: string
+          direction?: string
+          id?: never
+          kind?: string
+          medium?: string | null
+          notes?: string | null
+          occurred_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_touchpoints_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_videos: {
+        Row: {
+          brand_id: string | null
+          campaign_id: string | null
+          caption: string | null
+          created_at: string
+          creator_id: string
+          detected_by: string
+          duration_ms: number | null
+          id: string
+          platform_video_id: string
+          posted_at: string | null
+          url: string | null
+        }
+        Insert: {
+          brand_id?: string | null
+          campaign_id?: string | null
+          caption?: string | null
+          created_at?: string
+          creator_id: string
+          detected_by?: string
+          duration_ms?: number | null
+          id?: string
+          platform_video_id: string
+          posted_at?: string | null
+          url?: string | null
+        }
+        Update: {
+          brand_id?: string | null
+          campaign_id?: string | null
+          caption?: string | null
+          created_at?: string
+          creator_id?: string
+          detected_by?: string
+          duration_ms?: number | null
+          id?: string
+          platform_video_id?: string
+          posted_at?: string | null
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_videos_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "creator_videos_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_videos_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "creator_videos_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "creator_videos_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_videos_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns_dashboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_videos_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creators: {
+        Row: {
+          base_country: string | null
+          became_active_at: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          display_name: string | null
+          engagement_rate: number | null
+          first_contacted_at: string | null
+          follower_count: number | null
+          handle: string
+          id: string
+          metadata: Json
+          platform: string
+          primary_categories: string[]
+          status: string
+        }
+        Insert: {
+          base_country?: string | null
+          became_active_at?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          display_name?: string | null
+          engagement_rate?: number | null
+          first_contacted_at?: string | null
+          follower_count?: number | null
+          handle: string
+          id?: string
+          metadata?: Json
+          platform: string
+          primary_categories?: string[]
+          status?: string
+        }
+        Update: {
+          base_country?: string | null
+          became_active_at?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          display_name?: string | null
+          engagement_rate?: number | null
+          first_contacted_at?: string | null
+          follower_count?: number | null
+          handle?: string
+          id?: string
+          metadata?: Json
+          platform?: string
+          primary_categories?: string[]
+          status?: string
         }
         Relationships: []
       }
@@ -1270,6 +1574,114 @@ export type Database = {
           },
         ]
       }
+      sample_requests: {
+        Row: {
+          approved_at: string | null
+          campaign_id: string | null
+          creator_id: string
+          delivered_at: string | null
+          id: string
+          notes: string | null
+          product_id: string
+          qty: number
+          requested_at: string
+          requested_by: string | null
+          shipped_at: string | null
+          status: string
+          stock_movement_id: number | null
+          tracking_number: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          campaign_id?: string | null
+          creator_id: string
+          delivered_at?: string | null
+          id?: string
+          notes?: string | null
+          product_id: string
+          qty: number
+          requested_at?: string
+          requested_by?: string | null
+          shipped_at?: string | null
+          status?: string
+          stock_movement_id?: number | null
+          tracking_number?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          campaign_id?: string | null
+          creator_id?: string
+          delivered_at?: string | null
+          id?: string
+          notes?: string | null
+          product_id?: string
+          qty?: number
+          requested_at?: string
+          requested_by?: string | null
+          shipped_at?: string | null
+          status?: string
+          stock_movement_id?: number | null
+          tracking_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_requests_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_requests_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns_dashboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_requests_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "sample_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "sample_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "sample_requests_stock_movement_id_fkey"
+            columns: ["stock_movement_id"]
+            isOneToOne: false
+            referencedRelation: "stock_movements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       simulator_config: {
         Row: {
           key: string
@@ -1632,6 +2044,86 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "stock_dashboard"
             referencedColumns: ["product_id"]
+          },
+        ]
+      }
+      campaign_creators_dashboard: {
+        Row: {
+          accepted_at: string | null
+          agreed_deliverables: number | null
+          campaign_id: string | null
+          commission_bps: number | null
+          creator_handle: string | null
+          creator_id: string | null
+          creator_status: string | null
+          status: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns_dashboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_creators_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaigns_dashboard: {
+        Row: {
+          brand_id: string | null
+          brand_name: string | null
+          budget_cents: number | null
+          created_at: string | null
+          creators_enrolled: number | null
+          ends_at: string | null
+          goal_gmv_cents: number | null
+          id: string | null
+          name: string | null
+          starts_at: string | null
+          status: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "campaigns_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaigns_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "campaigns_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["brand_id"]
           },
         ]
       }
@@ -2086,6 +2578,81 @@ export type Database = {
         }
         Relationships: []
       }
+      sample_requests_dashboard: {
+        Row: {
+          campaign_id: string | null
+          creator_handle: string | null
+          creator_id: string | null
+          id: string | null
+          product_id: string | null
+          product_sku: string | null
+          product_title: string | null
+          qty: number | null
+          requested_at: string | null
+          shipped_at: string | null
+          status: string | null
+          stock_movement_id: number | null
+          tracking_number: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_requests_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_requests_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns_dashboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_requests_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "sample_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "sample_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "sample_requests_stock_movement_id_fkey"
+            columns: ["stock_movement_id"]
+            isOneToOne: false
+            referencedRelation: "stock_movements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sku_margin_by_channel: {
         Row: {
           avg_fee_cents: number | null
@@ -2323,6 +2890,18 @@ export type Database = {
         }
         Returns: string
       }
+      register_touchpoint: {
+        Args: {
+          p_actor?: string
+          p_creator_id: string
+          p_direction: string
+          p_kind: string
+          p_medium?: string
+          p_notes?: string
+          p_occurred_at?: string
+        }
+        Returns: Json
+      }
       reset_test_state: { Args: never; Returns: undefined }
       resolve_findings_with_no_drift: { Args: never; Returns: number }
       resolve_reconciliation_finding:
@@ -2343,6 +2922,15 @@ export type Database = {
       ship_order: {
         Args: { p_location_id: string; p_order_id: string }
         Returns: undefined
+      }
+      ship_sample: {
+        Args: {
+          p_location_id: string
+          p_sample_request_id: string
+          p_shipped_by?: string
+          p_tracking_number?: string
+        }
+        Returns: Json
       }
       skew_channel_report: {
         Args: { p_channel_id: string; p_delta: number; p_sku: string }
