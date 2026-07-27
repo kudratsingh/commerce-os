@@ -18,7 +18,9 @@ type Scenario =
   | "bad-signature"
   | "unknown-sku"
   | "overshoot"
-  | "invalid-json";
+  | "invalid-json"
+  | "ship-latest"
+  | "return-latest";
 
 interface Log {
   id: number;
@@ -29,14 +31,16 @@ interface Log {
 }
 
 const BUTTONS: Array<{ scenario: Scenario; label: string; hint: string; danger?: boolean }> = [
-  { scenario: "one",           label: "Send order",       hint: "order.created — 1 unit" },
-  { scenario: "burst",         label: "Burst 50",         hint: "50 random orders in parallel" },
-  { scenario: "duplicate",     label: "Duplicate",        hint: "same event_id twice" },
-  { scenario: "unknown-sku",   label: "Unknown SKU",      hint: "→ DLQ, retryable" },
-  { scenario: "overshoot",     label: "Overshoot",        hint: "qty 99999 → backordered" },
-  { scenario: "malformed",     label: "Malformed",        hint: "missing required fields" },
-  { scenario: "bad-signature", label: "Bad signature",    hint: "→ dead, not retryable", danger: true },
-  { scenario: "invalid-json",  label: "Invalid JSON",     hint: "unparseable body" },
+  { scenario: "one",            label: "Send order",       hint: "order.created — 1 unit" },
+  { scenario: "burst",          label: "Burst 50",         hint: "50 random orders in parallel" },
+  { scenario: "duplicate",      label: "Duplicate",        hint: "same event_id twice" },
+  { scenario: "ship-latest",    label: "Ship latest",      hint: "order.shipped — on_hand −qty" },
+  { scenario: "return-latest",  label: "Return latest",    hint: "order.returned — on_hand +qty" },
+  { scenario: "unknown-sku",    label: "Unknown SKU",      hint: "→ DLQ, retryable" },
+  { scenario: "overshoot",      label: "Overshoot",        hint: "qty 99999 → backordered" },
+  { scenario: "malformed",      label: "Malformed",        hint: "missing required fields" },
+  { scenario: "bad-signature",  label: "Bad signature",    hint: "→ dead, not retryable", danger: true },
+  { scenario: "invalid-json",   label: "Invalid JSON",     hint: "unparseable body" },
 ];
 
 export function ChaosPanel({ onFired }: { onFired?: () => void }) {

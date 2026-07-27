@@ -5,13 +5,15 @@
  * this CLI is the fallback / regression harness.
  *
  * Usage:
- *   pnpm sim:fire one                 # single order.created
- *   pnpm sim:fire burst 50            # 50 orders, ledger==rollup afterwards
- *   pnpm sim:fire duplicate           # send the same event_id twice
- *   pnpm sim:fire malformed           # missing required fields
- *   pnpm sim:fire bad-signature       # sign with wrong secret
- *   pnpm sim:fire unknown-sku         # DLQ scenario
- *   pnpm sim:fire overshoot           # allocate > on_hand => backordered
+ *   pnpm sim:fire one                              # single order.created
+ *   pnpm sim:fire burst 50                         # 50 orders, ledger==rollup afterwards
+ *   pnpm sim:fire duplicate                        # send the same event_id twice
+ *   pnpm sim:fire malformed                        # missing required fields
+ *   pnpm sim:fire bad-signature                    # sign with wrong secret
+ *   pnpm sim:fire unknown-sku                      # DLQ scenario
+ *   pnpm sim:fire overshoot                        # allocate > on_hand => backordered
+ *   pnpm sim:fire ship TTS-SEED-0001               # order.shipped for a specific external id
+ *   pnpm sim:fire return TTS-SEED-0001             # order.returned for a specific external id
  *
  * Env (loaded from .env.local via `tsx --env-file`):
  *   WEBHOOK_URL              default: http://127.0.0.1:3000/api/webhooks/tiktok
@@ -23,6 +25,8 @@ import {
   duplicate,
   malformedMissingRequiredFields,
   orderCreated,
+  orderReturned,
+  orderShipped,
   overshootOrder,
   unknownSkuOrder,
 } from "@/lib/simulator/payloads";
@@ -104,9 +108,29 @@ async function main(): Promise<void> {
       report(scenario, r);
       break;
     }
+    case "ship": {
+      const externalId = process.argv[3];
+      if (!externalId) {
+        console.error("ship requires an external_order_id: pnpm sim:fire ship TTS-SEED-0001");
+        process.exit(1);
+      }
+      const r = await firePayload(orderShipped(externalId), { url, secret });
+      report(scenario, r);
+      break;
+    }
+    case "return": {
+      const externalId = process.argv[3];
+      if (!externalId) {
+        console.error("return requires an external_order_id: pnpm sim:fire return TTS-SEED-0001");
+        process.exit(1);
+      }
+      const r = await firePayload(orderReturned(externalId), { url, secret });
+      report(scenario, r);
+      break;
+    }
     default: {
       console.error(`unknown scenario: ${scenario}`);
-      console.error("try: one | burst [N] | duplicate | malformed | bad-signature | unknown-sku | overshoot | invalid-json");
+      console.error("try: one | burst [N] | duplicate | malformed | bad-signature | unknown-sku | overshoot | invalid-json | ship <ext_id> | return <ext_id>");
       process.exit(1);
     }
   }

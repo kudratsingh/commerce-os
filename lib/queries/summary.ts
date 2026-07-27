@@ -9,6 +9,8 @@ export interface DashboardSummary {
   gmv_cents: number;
   orders_count: number;
   backordered_count: number;
+  shipped_count: number;
+  returned_count: number;
   received_count: number;
   processed_count: number;
   failed_count: number;
@@ -20,6 +22,8 @@ const EMPTY: DashboardSummary = {
   gmv_cents: 0,
   orders_count: 0,
   backordered_count: 0,
+  shipped_count: 0,
+  returned_count: 0,
   received_count: 0,
   processed_count: 0,
   failed_count: 0,
@@ -38,6 +42,8 @@ export async function getDashboardSummary(db: Db): Promise<DashboardSummary> {
     gmv_cents: Number(data.gmv_cents ?? 0),
     orders_count: data.orders_count ?? 0,
     backordered_count: data.backordered_count ?? 0,
+    shipped_count: data.shipped_count ?? 0,
+    returned_count: data.returned_count ?? 0,
     received_count: data.received_count ?? 0,
     processed_count: data.processed_count ?? 0,
     failed_count: data.failed_count ?? 0,
