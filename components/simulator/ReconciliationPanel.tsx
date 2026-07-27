@@ -41,11 +41,11 @@ export function ReconciliationPanel({
     });
   }
 
-  async function resolve(findingId: number) {
+  async function resolve(findingId: number, strategy: "ack" | "accept_source" = "ack") {
     setResolvingId(findingId);
     setErr(null);
     try {
-      const { body } = await resolveFindingAction(findingId);
+      const { body } = await resolveFindingAction(findingId, strategy);
       if (body.error) {
         setErr(body.error);
         return;
@@ -126,10 +126,18 @@ export function ReconciliationPanel({
                   <td className="px-4 py-2">
                     <span
                       className={`mono text-[10px] uppercase tracking-wider ${
-                        f.kind === "ledger_drift" ? "text-danger" : "text-warn"
+                        f.kind === "ledger_drift"
+                          ? "text-danger"
+                          : f.kind === "erp_drift"
+                            ? "text-info"
+                            : "text-warn"
                       }`}
                     >
-                      {f.kind === "ledger_drift" ? "ledger" : "channel"}
+                      {f.kind === "ledger_drift"
+                        ? "ledger"
+                        : f.kind === "erp_drift"
+                          ? "erp"
+                          : "channel"}
                     </span>
                   </td>
                   <td className="px-2 py-2">
@@ -151,13 +159,25 @@ export function ReconciliationPanel({
                     {f.delta > 0 ? `+${f.delta}` : f.delta}
                   </td>
                   <td className="px-4 py-2 text-right">
-                    <button
-                      onClick={() => resolve(f.id)}
-                      disabled={resolvingId === f.id}
-                      className="mono text-[11px] uppercase tracking-wider px-2 py-1 rounded border border-border-strong text-text hover:bg-panel-hover disabled:opacity-60"
-                    >
-                      {resolvingId === f.id ? "…" : "Resolve"}
-                    </button>
+                    <div className="flex items-center justify-end gap-1">
+                      {f.kind === "erp_drift" && (
+                        <button
+                          onClick={() => resolve(f.id, "accept_source")}
+                          disabled={resolvingId === f.id}
+                          className="mono text-[11px] uppercase tracking-wider px-2 py-1 rounded border border-info/60 text-info hover:bg-info/10 disabled:opacity-60"
+                          title="Accept ESI's on_hand as truth — appends an adjustment ledger movement"
+                        >
+                          {resolvingId === f.id ? "…" : "Accept ESI"}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => resolve(f.id, "ack")}
+                        disabled={resolvingId === f.id}
+                        className="mono text-[11px] uppercase tracking-wider px-2 py-1 rounded border border-border-strong text-text hover:bg-panel-hover disabled:opacity-60"
+                      >
+                        {resolvingId === f.id ? "…" : "Ack"}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

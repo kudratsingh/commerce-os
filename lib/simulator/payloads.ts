@@ -173,6 +173,96 @@ export function overshootOrder(): WebhookPayload {
   });
 }
 
+// ============================================================================
+// ESI/ERP webhook payload factories (ADR-011, migration 013)
+// ============================================================================
+
+interface EsiCountArgs {
+  sku?: string;
+  location?: string;
+  countedQty?: number;
+}
+
+export function esiCount(args: EsiCountArgs = {}): {
+  event_id: string;
+  event_type: "stock.counted";
+  emitted_at: string;
+  stock: { external_sku: string; location: string; counted_qty: number };
+} {
+  return {
+    event_id: `ESI-CNT-${crypto.randomUUID()}`,
+    event_type: "stock.counted",
+    emitted_at: new Date().toISOString(),
+    stock: {
+      external_sku: args.sku ?? "VC-BT-100",
+      location: args.location ?? "Van Nuys DC",
+      counted_qty: args.countedQty ?? 115,
+    },
+  };
+}
+
+interface EsiTransferArgs {
+  sku?: string;
+  fromLocation?: string;
+  toLocation?: string;
+  qty?: number;
+}
+
+export function esiTransfer(args: EsiTransferArgs = {}): {
+  event_id: string;
+  event_type: "stock.transferred";
+  emitted_at: string;
+  transfer: {
+    external_sku: string;
+    from_location: string;
+    to_location: string;
+    qty: number;
+  };
+} {
+  return {
+    event_id: `ESI-TR-${crypto.randomUUID()}`,
+    event_type: "stock.transferred",
+    emitted_at: new Date().toISOString(),
+    transfer: {
+      external_sku: args.sku ?? "VC-BT-100",
+      from_location: args.fromLocation ?? "Van Nuys DC",
+      to_location: args.toLocation ?? "Reno DC",
+      qty: args.qty ?? 25,
+    },
+  };
+}
+
+interface EsiDamageArgs {
+  sku?: string;
+  location?: string;
+  qty?: number;
+  note?: string;
+}
+
+export function esiDamage(args: EsiDamageArgs = {}): {
+  event_id: string;
+  event_type: "stock.damaged";
+  emitted_at: string;
+  damage: {
+    external_sku: string;
+    location: string;
+    qty: number;
+    note?: string;
+  };
+} {
+  return {
+    event_id: `ESI-DMG-${crypto.randomUUID()}`,
+    event_type: "stock.damaged",
+    emitted_at: new Date().toISOString(),
+    damage: {
+      external_sku: args.sku ?? "VC-BT-100",
+      location: args.location ?? "Van Nuys DC",
+      qty: args.qty ?? 3,
+      note: args.note ?? "water damage during handling",
+    },
+  };
+}
+
 /**
  * A burst of independent orders. Used to demonstrate the ledger and rollup
  * still agree after concurrent-ish traffic (Day 3 dashboard shows the tick).

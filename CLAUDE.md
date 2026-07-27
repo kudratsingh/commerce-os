@@ -41,9 +41,13 @@ psql "$LOCAL_DB_URL" -f db/tests/invariants.sql   # the 6 invariant tests, all m
 1. `stock_movements` is APPEND-ONLY. Never write UPDATE or DELETE against it,
    never disable its trigger, never "fix" a row — corrections are new
    `adjustment` movements with a note.
-2. `stock_levels.on_hand` and `.committed` are ONLY mutated by the domain
-   functions (`receive_po_line`, `allocate_order`, `ship_order`, `cancel_order`).
-   App code never updates these columns directly.
+2. `stock_levels.on_hand` and `.committed` are ONLY mutated by trusted
+   domain functions. The set includes `receive_po_line`, `allocate_order`,
+   `ship_order`, `cancel_order`, and the ESI-mastered path
+   (`_apply_stock_counted`, `_apply_stock_transferred`, `_apply_stock_damaged`
+   — migration 013). App code never updates these columns directly. Under
+   ESI-master mode, `receive_po_line` is one inbound writer among several;
+   corrections are appended as new movements, never as edits.
 3. The oversell firewall `CHECK (committed <= on_hand)` stays. If a feature
    "needs" it removed, the feature is designed wrong.
 4. Every webhook handler is idempotent. Dedupe via `webhook_events` unique

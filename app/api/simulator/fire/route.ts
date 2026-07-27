@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { POST as erpWebhookRoute } from "@/app/api/webhooks/erp/route";
 import { POST as tiktokWebhookRoute } from "@/app/api/webhooks/tiktok/route";
 import { requireOpsSecret } from "@/lib/auth/ops-secret";
 import { createSupabaseServer } from "@/lib/db/server";
@@ -9,6 +10,9 @@ import { firePayload, fireRaw } from "@/lib/simulator/fire";
 import {
   burst,
   duplicate,
+  esiCount,
+  esiDamage,
+  esiTransfer,
   malformedMissingRequiredFields,
   orderCreated,
   orderReturned,
@@ -41,6 +45,9 @@ const bodySchema = z
       "invalid-json",
       "ship-latest",
       "return-latest",
+      "esi-count",
+      "esi-transfer",
+      "esi-damage",
     ]),
     count: z.number().int().positive().max(200).optional(),
   })
@@ -168,6 +175,43 @@ export async function POST(req: Request): Promise<Response> {
         break;
       }
       results.push(await firePayload(orderReturned(target), opts));
+      break;
+    }
+
+    // ESI/ERP scenarios (ADR-011). Fire at /api/webhooks/erp; same HMAC,
+    // same DLQ, different domain function on the other side.
+    case "esi-count": {
+      const esiOpts = {
+        ...opts,
+        webhookHandler: erpWebhookRoute,
+        webhookPath: "/api/webhooks/erp",
+      };
+      results.push(
+        await firePayload(esiCount({ countedQty: 115 }), esiOpts),
+      );
+      break;
+    }
+    case "esi-transfer": {
+      const esiOpts = {
+        ...opts,
+        webhookHandler: erpWebhookRoute,
+        webhookPath: "/api/webhooks/erp",
+      };
+      results.push(
+        await firePayload(
+          esiTransfer({ fromLocation: "Van Nuys DC", toLocation: "Van Nuys DC", qty: 5 }),
+          esiOpts,
+        ),
+      );
+      break;
+    }
+    case "esi-damage": {
+      const esiOpts = {
+        ...opts,
+        webhookHandler: erpWebhookRoute,
+        webhookPath: "/api/webhooks/erp",
+      };
+      results.push(await firePayload(esiDamage({ qty: 2 }), esiOpts));
       break;
     }
   }

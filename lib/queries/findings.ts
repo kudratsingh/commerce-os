@@ -8,7 +8,7 @@ import type { Db } from "@/lib/db/server";
 export interface FindingRow {
   id: number;
   run_id: string;
-  kind: "ledger_drift" | "channel_drift";
+  kind: "ledger_drift" | "channel_drift" | "erp_drift";
   product_id: string;
   sku: string;
   title: string;
