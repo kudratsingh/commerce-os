@@ -15,12 +15,14 @@ import { getOpenFindings, getRecentReconRuns } from "@/lib/queries/findings";
 const runIntegration =
   !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
   !!process.env.SUPABASE_SERVICE_ROLE_KEY &&
-  !!process.env.WEBHOOK_SHARED_SECRET;
+  !!process.env.WEBHOOK_SHARED_SECRET &&
+  !!process.env.OPS_SHARED_SECRET;
 
 const describeIntegration = runIntegration ? describe : describe.skip;
 
 describeIntegration("reconciliation + chaos skew", () => {
   let db: SupabaseClient<Database>;
+  const opsSecret = process.env.OPS_SHARED_SECRET!;
 
   beforeAll(async () => {
     db = createClient<Database>(
@@ -30,15 +32,23 @@ describeIntegration("reconciliation + chaos skew", () => {
     );
   });
 
+  function opsHeaders(extra: Record<string, string> = {}): Record<string, string> {
+    return { "content-type": "application/json", "x-ops-secret": opsSecret, ...extra };
+  }
+
   async function callRun() {
-    const res = await runRoute();
+    const req = new Request("http://test/api/reconciliation/run", {
+      method: "POST",
+      headers: opsHeaders(),
+    });
+    const res = await runRoute(req);
     return { status: res.status, body: (await res.json()) as { run_id?: string; error?: string } };
   }
 
   async function callSkew(channel_id: string, sku: string, delta: number) {
     const req = new Request("http://test/api/simulator/skew", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: opsHeaders(),
       body: JSON.stringify({ channel_id, sku, delta }),
     });
     const res = await skewRoute(req);
@@ -48,7 +58,7 @@ describeIntegration("reconciliation + chaos skew", () => {
   async function callResolve(finding_id: number) {
     const req = new Request("http://test/api/reconciliation/resolve", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: opsHeaders(),
       body: JSON.stringify({ finding_id }),
     });
     const res = await resolveRoute(req);
@@ -103,11 +113,37 @@ describeIntegration("reconciliation + chaos skew", () => {
   it("skew route rejects malformed body", async () => {
     const req = new Request("http://test/api/simulator/skew", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: opsHeaders(),
       body: JSON.stringify({ channel_id: "tiktok_shop" }),
     });
     const res = await skewRoute(req);
     expect(res.status).toBe(400);
+  });
+
+  it("skew route refuses without ops secret (401)", async () => {
+    const req = new Request("http://test/api/simulator/skew", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ channel_id: "tiktok_shop", sku: "TTS-VC-BT-100", delta: 1 }),
+    });
+    const res = await skewRoute(req);
+    expect(res.status).toBe(401);
+  });
+
+  it("run route refuses without ops secret (401)", async () => {
+    const req = new Request("http://test/api/reconciliation/run", { method: "POST" });
+    const res = await runRoute(req);
+    expect(res.status).toBe(401);
+  });
+
+  it("resolve route refuses without ops secret (401)", async () => {
+    const req = new Request("http://test/api/reconciliation/resolve", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ finding_id: 1 }),
+    });
+    const res = await resolveRoute(req);
+    expect(res.status).toBe(401);
   });
 
   it("recent_recon_runs surfaces the runs we just fired", async () => {

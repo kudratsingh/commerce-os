@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { askNlQueryAction } from "@/lib/actions/ops-actions";
 import type { OrderRow } from "@/lib/queries/orders";
 import { formatCents, relativeTime } from "@/lib/utils/format";
 
@@ -40,13 +41,15 @@ export function NLQueryBar() {
     setResult(null);
     setQuestion(text);
     try {
-      const res = await fetch("/api/nl-query", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ question: text }),
+      const { body } = await askNlQueryAction(text);
+      setResult({
+        spec: body.spec,
+        rows: body.rows as OrderRow[] | undefined,
+        attempts: body.attempts,
+        raw_first: body.raw_first,
+        raw_retry: body.raw_retry,
+        error: body.error,
       });
-      const body = (await res.json()) as Response;
-      setResult(body);
     } catch (err) {
       setResult({ error: err instanceof Error ? err.message : "network error" });
     } finally {

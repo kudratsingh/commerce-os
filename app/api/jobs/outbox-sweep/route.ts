@@ -8,9 +8,10 @@ import { deliverOutboxBatch } from "@/lib/domain/outbox";
  * POST /api/jobs/outbox-sweep — re-entrant outbox sweeper.
  *
  * Called two ways:
- *   1. Cloudflare Cron Trigger (1/min) — wired via a custom worker
- *      entrypoint (deferred to Day 4 with the Run Now UI; see PR notes).
- *   2. Manual "Run Now" button on the ops dashboard (Day 4).
+ *   1. Cloudflare Cron Trigger (1/min) — a small separate Worker in
+ *      `cron-worker/` handles the schedule and POSTs here with the shared
+ *      secret. See cron-worker/README.md for the deploy story.
+ *   2. Manual "Run Now" button on the ops dashboard.
  *
  * Safe under overlapping firings: `outbox_deliver_batch` claims rows with
  * FOR UPDATE SKIP LOCKED and marks them delivered atomically. Delivery is a

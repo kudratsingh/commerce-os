@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { requireOpsSecret } from "@/lib/auth/ops-secret";
 import { createSupabaseServer } from "@/lib/db/server";
 import { resolveFinding } from "@/lib/domain/reconciliation";
 
@@ -13,6 +14,9 @@ const bodySchema = z.object({
  * out of `open_findings`. Auditable — the row itself is preserved.
  */
 export async function POST(req: Request): Promise<Response> {
+  const auth = requireOpsSecret(req);
+  if (!auth.ok) return auth.response;
+
   let json: unknown;
   try {
     json = await req.json();

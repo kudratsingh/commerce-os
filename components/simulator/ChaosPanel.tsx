@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 
+import { fireScenarioAction, skewChannelAction } from "@/lib/actions/ops-actions";
+
 /**
- * Chaos buttons + a running result log. Each button POSTs to
- * /api/simulator/fire; the server signs and calls THIS worker's own
- * webhook, so every scenario exercises the real ingestion path (ADR-008).
+ * Chaos buttons + a running result log. Server actions proxy to
+ * /api/simulator/* with the ops secret attached server-side; the routes
+ * remain gated for external callers (invariant #8).
  */
 
 type Scenario =
@@ -44,16 +46,7 @@ export function ChaosPanel({ onFired }: { onFired?: () => void }) {
   async function fire(scenario: Scenario) {
     setBusy(scenario);
     try {
-      const res = await fetch("/api/simulator/fire", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ scenario }),
-      });
-      const body = (await res.json()) as {
-        fired?: number;
-        results?: Array<{ status: number; body: { status?: string; deduped?: boolean; error?: string } }>;
-        error?: string;
-      };
+      const { body } = await fireScenarioAction(scenario);
       if (body.error) {
         pushLog(scenario, false, body.error);
         return;
@@ -71,21 +64,7 @@ export function ChaosPanel({ onFired }: { onFired?: () => void }) {
   async function skew() {
     setBusy("skew");
     try {
-      const res = await fetch("/api/simulator/skew", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          channel_id: "tiktok_shop",
-          sku: "TTS-VC-BT-100",
-          delta: 7,
-        }),
-      });
-      const body = (await res.json()) as {
-        outcome?: string;
-        available?: number;
-        reported?: number;
-        error?: string;
-      };
+      const { body } = await skewChannelAction("tiktok_shop", "TTS-VC-BT-100", 7);
       if (body.error) {
         pushLog("skew", false, body.error);
         return;

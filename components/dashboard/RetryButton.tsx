@@ -3,11 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
+import { retryDlqAction } from "@/lib/actions/ops-actions";
+
 /**
- * DLQ row action. POSTs to /api/dlq/retry, then router.refresh() so the
- * server-rendered DLQ panel re-fetches. Optimistic feedback is a
- * spinner + result badge on the button itself; the panel re-render is
- * the source of truth.
+ * DLQ row action. Server action proxies to /api/dlq/retry with the ops
+ * shared secret attached server-side (invariant #8 — no secret in the
+ * client bundle), then router.refresh() so the server-rendered DLQ panel
+ * re-fetches. Panel re-render is the source of truth.
  */
 export function RetryButton({
   eventId,
@@ -28,14 +30,9 @@ export function RetryButton({
     setResult({ kind: "idle" });
     startTransition(async () => {
       try {
-        const res = await fetch("/api/dlq/retry", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ event_id: eventId }),
-        });
-        const body = (await res.json()) as { outcome?: string; error?: string };
-        if (!res.ok || body.error) {
-          setResult({ kind: "err", message: body.error ?? `HTTP ${res.status}` });
+        const { status, body } = await retryDlqAction(eventId);
+        if (status !== 200 || body.error) {
+          setResult({ kind: "err", message: body.error ?? `HTTP ${status}` });
           return;
         }
         setResult({ kind: "ok", outcome: body.outcome ?? "retried" });

@@ -4,4 +4,8 @@ NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 WEBHOOK_SHARED_SECRET=dev-secret-change-me
+# Guard for ops-only mutating routes (simulator, reconciliation, DLQ, NL query).
+# Must be at least 16 chars. Set to a strong random string in deployed envs
+# via `wrangler secret put OPS_SHARED_SECRET`.
+OPS_SHARED_SECRET=dev-ops-secret-change-me-16
 ANTHROPIC_API_KEY=
