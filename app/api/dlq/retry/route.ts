@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { requireOpsSecret } from "@/lib/auth/ops-secret";
 import { createSupabaseServer } from "@/lib/db/server";
 import { getDefaultLocationId } from "@/lib/domain/locations";
 import { retryWebhookEvent } from "@/lib/domain/retry";
@@ -8,12 +9,10 @@ import { retryWebhookEvent } from "@/lib/domain/retry";
 /**
  * POST /api/dlq/retry — re-processes a failed webhook event.
  *
- * Called from the DLQ panel's per-row Retry button (same-origin, no CSRF
- * concern for this demo). The RPC refuses bad-signature events; other
- * failures land back in the DLQ with an updated last_error.
- *
- * Auth: none in this sprint. When the ops login lands (BUILD_PLAN scope
- * note), this route becomes session-gated.
+ * Gated by `x-ops-secret` (see lib/auth/ops-secret.ts) until Module 3's
+ * Supabase Auth sessions ship. Same-origin browser calls from the DLQ
+ * panel must attach the header (proxied by a server action or a helper
+ * that reads from an httpOnly cookie set at login).
  */
 
 const bodySchema = z.object({
@@ -21,6 +20,9 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: Request): Promise<Response> {
+  const auth = requireOpsSecret(req);
+  if (!auth.ok) return auth.response;
+
   let json: unknown;
   try {
     json = await req.json();

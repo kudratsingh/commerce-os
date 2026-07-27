@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
+import { resolveFindingAction, runReconciliationAction } from "@/lib/actions/ops-actions";
 import type { FindingRow, ReconRunRow } from "@/lib/queries/findings";
 
 /**
@@ -27,8 +28,7 @@ export function ReconciliationPanel({
     setErr(null);
     startRunning(async () => {
       try {
-        const res = await fetch("/api/reconciliation/run", { method: "POST" });
-        const body = (await res.json()) as { run_id?: string; error?: string };
+        const { body } = await runReconciliationAction();
         if (body.error) {
           setErr(body.error);
           return;
@@ -45,12 +45,7 @@ export function ReconciliationPanel({
     setResolvingId(findingId);
     setErr(null);
     try {
-      const res = await fetch("/api/reconciliation/resolve", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ finding_id: findingId }),
-      });
-      const body = (await res.json()) as { outcome?: string; error?: string };
+      const { body } = await resolveFindingAction(findingId);
       if (body.error) {
         setErr(body.error);
         return;

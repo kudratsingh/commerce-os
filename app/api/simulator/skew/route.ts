@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { requireOpsSecret } from "@/lib/auth/ops-secret";
 import { createSupabaseServer } from "@/lib/db/server";
 import { skewChannelReport } from "@/lib/domain/reconciliation";
 
@@ -19,6 +20,9 @@ const bodySchema = z.object({
  * and marketplace beliefs diverge, we can prove which one is wrong.
  */
 export async function POST(req: Request): Promise<Response> {
+  const auth = requireOpsSecret(req);
+  if (!auth.ok) return auth.response;
+
   let json: unknown;
   try {
     json = await req.json();

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { requireOpsSecret } from "@/lib/auth/ops-secret";
 import { serverEnv } from "@/lib/domain/env";
 import { firePayload, fireRaw } from "@/lib/simulator/fire";
 import {
@@ -47,6 +48,9 @@ interface FireOutcome {
 }
 
 export async function POST(req: Request): Promise<Response> {
+  const auth = requireOpsSecret(req);
+  if (!auth.ok) return auth.response;
+
   let json: unknown;
   try {
     json = await req.json();

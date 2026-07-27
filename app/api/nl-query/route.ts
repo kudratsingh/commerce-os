@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { requireOpsSecret } from "@/lib/auth/ops-secret";
 import { createSupabaseServer } from "@/lib/db/server";
 import { serverEnv } from "@/lib/domain/env";
 import { planFilterSpec, runFilterSpec } from "@/lib/domain/nl-query";
@@ -21,6 +22,9 @@ const bodySchema = z.object({
  *   { spec, rows, attempts, raw_first?, raw_retry? }
  */
 export async function POST(req: Request): Promise<Response> {
+  const auth = requireOpsSecret(req);
+  if (!auth.ok) return auth.response;
+
   let json: unknown;
   try {
     json = await req.json();

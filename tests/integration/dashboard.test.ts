@@ -21,12 +21,14 @@ import { orderCreated } from "@/lib/simulator/payloads";
 const runIntegration =
   !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
   !!process.env.SUPABASE_SERVICE_ROLE_KEY &&
-  !!process.env.WEBHOOK_SHARED_SECRET;
+  !!process.env.WEBHOOK_SHARED_SECRET &&
+  !!process.env.OPS_SHARED_SECRET;
 
 const describeIntegration = runIntegration ? describe : describe.skip;
 
 describeIntegration("dashboard queries + DLQ retry", () => {
   const secret = process.env.WEBHOOK_SHARED_SECRET!;
+  const opsSecret = process.env.OPS_SHARED_SECRET!;
   let db: SupabaseClient<Database>;
 
   beforeAll(async () => {
@@ -117,7 +119,7 @@ describeIntegration("dashboard queries + DLQ retry", () => {
     const retryRes = await retryRoute(
       new Request("http://test/api/dlq/retry", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", "x-ops-secret": opsSecret },
         body: JSON.stringify({ event_id: target!.id }),
       }),
     );
@@ -151,7 +153,7 @@ describeIntegration("dashboard queries + DLQ retry", () => {
     const retryRes = await retryRoute(
       new Request("http://test/api/dlq/retry", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", "x-ops-secret": opsSecret },
         body: JSON.stringify({ event_id: dead!.id }),
       }),
     );
@@ -165,10 +167,21 @@ describeIntegration("dashboard queries + DLQ retry", () => {
     const res = await retryRoute(
       new Request("http://test/api/dlq/retry", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", "x-ops-secret": opsSecret },
         body: JSON.stringify({ event_id: "not-a-uuid" }),
       }),
     );
     expect(res.status).toBe(400);
+  });
+
+  it("retry endpoint refuses without ops secret (401)", async () => {
+    const res = await retryRoute(
+      new Request("http://test/api/dlq/retry", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ event_id: "00000000-0000-0000-0000-000000000001" }),
+      }),
+    );
+    expect(res.status).toBe(401);
   });
 });

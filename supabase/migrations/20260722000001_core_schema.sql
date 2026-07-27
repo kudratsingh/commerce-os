@@ -198,8 +198,9 @@ create table webhook_events (
 );
 
 -- Transactional outbox: domain writes and their side-effect intents commit
--- together. A sweeper (Vercel cron) delivers them with retries. A crash
--- between commit and delivery loses nothing.
+-- together. A sweeper (Workers Cron Trigger — see cron-worker/ and ADR-005)
+-- delivers them with retries. A crash between commit and delivery loses
+-- nothing.
 create table outbox (
   id              bigint generated always as identity primary key,
   aggregate_type  text not null,             -- 'order', 'inventory', ...

@@ -17,6 +17,10 @@ const schema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(20),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(20),
   WEBHOOK_SHARED_SECRET: z.string().min(8),
+  // Gate for ops-only mutating routes (simulator, reconciliation, DLQ,
+  // NL query). Cheapest safeguard until Module 3's Supabase Auth sessions
+  // land — see lib/auth/ops-secret.ts.
+  OPS_SHARED_SECRET: z.string().min(16),
   ANTHROPIC_API_KEY: z.string().optional(),
 });
 
