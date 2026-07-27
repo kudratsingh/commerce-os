@@ -16,6 +16,7 @@ Deep documentation lives in `docs/` — read on demand, don't guess:
 | `docs/adr/` | Before changing anything an ADR covers — update or supersede the ADR |
 | `BUILD_PLAN.md` | Daily scope, demo script, what is deliberately out of scope |
 | `ROADMAP.md` | Module sequencing + metric definitions when building beyond the core |
+| `docs/next-phases/` | Executable per-module plans (schema, RPCs, routes, PR sizing) for post-demo work |
 
 ## Commands
 

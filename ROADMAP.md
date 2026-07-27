@@ -134,3 +134,26 @@ proposes, typed validation disposes; models never touch SQL or money paths.
 Sequencing principle: every quarter ships something a named person uses
 daily, and nothing is built twice — each module compounds on the ledger
 rather than beside it.
+
+---
+
+## Execution plans
+
+This ROADMAP is the "what and why." The **"how"** — sequenced PRs per module
+with schema drops, RPCs, routes, LOC estimates, testing, and deferrals — lives
+in [`docs/next-phases/`](./docs/next-phases/). One doc per module, plus an
+overview + dependency graph.
+
+| Module | Execution plan |
+|---|---|
+| 1 — Purchasing & Replenishment | [`docs/next-phases/01-purchasing-replenishment.md`](./docs/next-phases/01-purchasing-replenishment.md) |
+| 2 — Live Floor Control Room | [`docs/next-phases/04-live-floor-control.md`](./docs/next-phases/04-live-floor-control.md) |
+| 3 — Brand Portal | [`docs/next-phases/05-brand-portal.md`](./docs/next-phases/05-brand-portal.md) |
+| 4 — Creator & Affiliate Ops + Metrics | [`docs/next-phases/03-creator-affiliate-ops.md`](./docs/next-phases/03-creator-affiliate-ops.md) |
+| 5 — Settlement Reconciliation | [`docs/next-phases/06-settlement-reconciliation.md`](./docs/next-phases/06-settlement-reconciliation.md) |
+| 6.a — TikTok Shop adapter | [`docs/next-phases/02-tiktok-shop-adapter.md`](./docs/next-phases/02-tiktok-shop-adapter.md) |
+| 6.b+ — Marketplace expansion | [`docs/next-phases/07-marketplace-expansion.md`](./docs/next-phases/07-marketplace-expansion.md) |
+| 7 — AI Layer (pattern) | [`docs/next-phases/08-ai-layer.md`](./docs/next-phases/08-ai-layer.md) |
+
+Start with the [overview](./docs/next-phases/README.md) for the dependency
+graph and quarterly milestones.
