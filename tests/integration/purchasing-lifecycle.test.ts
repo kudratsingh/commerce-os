@@ -8,6 +8,7 @@ import {
   receiveShipment,
   upsertReorderPoint,
 } from "@/lib/domain/purchasing";
+import { resetEphemera } from "@/tests/helpers/reset-ephemera";
 
 /**
  * PR M1-B/C/D integration tests. Covers:
@@ -34,6 +35,7 @@ describeIntegration("purchasing lifecycle + replenishment + margin", () => {
   let vcBt100Id: string;
 
   beforeAll(async () => {
+    await resetEphemera();
     db = createClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
