@@ -95,6 +95,55 @@ export function orderCancelled(externalOrderId: string): WebhookPayload {
   };
 }
 
+/**
+ * Ship notification. The RPC (`_apply_order_shipped`) doesn't consult the
+ * payload's lines — it iterates `order_lines` by order_id — so the lines
+ * here are schema-compliance placeholders.
+ */
+export function orderShipped(externalOrderId: string): WebhookPayload {
+  const now = new Date().toISOString();
+  return {
+    event_id: newEventId(),
+    event_type: "order.shipped",
+    occurred_at: now,
+    order: {
+      external_order_id: externalOrderId,
+      placed_at: now,
+      lines: [
+        {
+          external_sku: pick(TIKTOK_SEED_SKUS),
+          qty: 1,
+          unit_price_cents: 0,
+        },
+      ],
+    },
+  };
+}
+
+/**
+ * Return notification. Same shape as `orderShipped` — the RPC iterates
+ * order_lines by id, not by payload.
+ */
+export function orderReturned(externalOrderId: string): WebhookPayload {
+  const now = new Date().toISOString();
+  return {
+    event_id: newEventId(),
+    event_type: "order.returned",
+    occurred_at: now,
+    order: {
+      external_order_id: externalOrderId,
+      placed_at: now,
+      lines: [
+        {
+          external_sku: pick(TIKTOK_SEED_SKUS),
+          qty: 1,
+          unit_price_cents: 0,
+        },
+      ],
+    },
+  };
+}
+
 /** Order whose SKU is not in `channel_listings` — DLQ scenario. */
 export function unknownSkuOrder(): WebhookPayload {
   return orderCreated({

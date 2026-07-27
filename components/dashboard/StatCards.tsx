@@ -2,9 +2,13 @@ import { formatCents, formatCompact } from "@/lib/utils/format";
 import type { DashboardSummary } from "@/lib/queries/summary";
 
 /**
- * Top-of-page stat strip. Six tiles rendered from `dashboard_summary`
+ * Top-of-page stat strip. Eight tiles rendered from `dashboard_summary`
  * (single-row view, one query). Muted color per metric type — value is the
  * loud element, label is quiet, footnote quieter still.
+ *
+ * Grouping (visual): revenue-shape metrics first (GMV, backordered,
+ * shipped, returned), then ingestion-shape metrics (ingested, processed,
+ * failed, dead). The DLQ count is elsewhere (in the DLQ panel header).
  */
 export function StatCards({ summary }: { summary: DashboardSummary }) {
   const cards: Array<{
@@ -24,6 +28,18 @@ export function StatCards({ summary }: { summary: DashboardSummary }) {
       value: formatCompact(summary.backordered_count),
       footnote: "not shippable now",
       accent: summary.backordered_count > 0 ? "warn" : undefined,
+    },
+    {
+      label: "Shipped",
+      value: formatCompact(summary.shipped_count),
+      footnote: "on_hand −qty today",
+      accent: summary.shipped_count > 0 ? "info" : undefined,
+    },
+    {
+      label: "Returned",
+      value: formatCompact(summary.returned_count),
+      footnote: "on_hand +qty today",
+      accent: summary.returned_count > 0 ? "warn" : undefined,
     },
     {
       label: "Ingested",
@@ -56,7 +72,7 @@ export function StatCards({ summary }: { summary: DashboardSummary }) {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8">
       {cards.map((c) => (
         <StatTile key={c.label} {...c} />
       ))}

@@ -73,8 +73,10 @@ be explaining the system to merchants, not engineers.
 - `shipped` — physically gone; the ledger has its −qty.
 - `cancelled` — reservation released; unit sellable again; marketplace
   handles the refund money.
-- `refunded` — money returned post-shipment; goods may come back later as a
-  `return_received` movement (schema supports it; demo UI does not).
+- `refunded` — money returned post-shipment.
+- `returned` — goods physically came back and were put back on shelf via a
+  `return_received` movement (+qty). Money handling is a separate concern
+  (Module 5, settlement reconciliation). Wired end-to-end via migration 007.
 
 PO side: `placed → partially_received → received` is simply "ordered" vs
 "arrived, possibly across multiple trucks."
@@ -82,8 +84,9 @@ PO side: `placed → partially_received → received` is simply "ordered" vs
 ## Named but deliberately out of scope (say these, don't build them)
 
 Tracking push-back to the marketplace, settlement/payout reconciliation,
-returns UI and inspection flow, carrier label purchase, pick/pack (WMS
-territory), multi-warehouse allocation choice, ad-spend (GMV Max) data.
-Each is an adapter or module on top of this core; none changes the ledger,
-the reservation model, or the ingestion contract — which is the argument
-that this core is the right thing to build first.
+inspection flow for returned goods (grade + restock decision), carrier
+label purchase, pick/pack (WMS territory), multi-warehouse allocation
+choice, ad-spend (GMV Max) data. Each is an adapter or module on top of
+this core; none changes the ledger, the reservation model, or the
+ingestion contract — which is the argument that this core is the right
+thing to build first.

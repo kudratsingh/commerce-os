@@ -22,7 +22,12 @@ export const webhookOrderSchema = z.object({
   lines: z.array(webhookLineSchema).min(1),
 });
 
-export const webhookEventTypeSchema = z.enum(["order.created", "order.cancelled"]);
+export const webhookEventTypeSchema = z.enum([
+  "order.created",
+  "order.cancelled",
+  "order.shipped",
+  "order.returned",
+]);
 
 export const webhookPayloadSchema = z.object({
   event_id: z.string().min(1),

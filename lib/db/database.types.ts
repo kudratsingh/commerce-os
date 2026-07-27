@@ -835,6 +835,8 @@ export type Database = {
           orders_count: number | null
           processed_count: number | null
           received_count: number | null
+          returned_count: number | null
+          shipped_count: number | null
         }
         Relationships: []
       }
@@ -1078,6 +1080,20 @@ export type Database = {
         }[]
       }
       _apply_order_created: {
+        Args: { p_channel_id: string; p_location_id: string; p_payload: Json }
+        Returns: {
+          order_id: string
+          outcome: string
+        }[]
+      }
+      _apply_order_returned: {
+        Args: { p_channel_id: string; p_location_id: string; p_payload: Json }
+        Returns: {
+          order_id: string
+          outcome: string
+        }[]
+      }
+      _apply_order_shipped: {
         Args: { p_channel_id: string; p_location_id: string; p_payload: Json }
         Returns: {
           order_id: string

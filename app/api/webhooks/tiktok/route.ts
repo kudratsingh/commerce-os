@@ -127,6 +127,9 @@ export async function POST(req: Request): Promise<Response> {
     case "allocated":
     case "backordered":
     case "cancelled":
+    case "shipped":
+    case "returned":
+    case "delivered":
       return NextResponse.json(
         {
           status: outcome.outcome,

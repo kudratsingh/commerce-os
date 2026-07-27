@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { POST as tiktokWebhookRoute } from "@/app/api/webhooks/tiktok/route";
 import { requireOpsSecret } from "@/lib/auth/ops-secret";
+import { createSupabaseServer } from "@/lib/db/server";
 import { serverEnv } from "@/lib/domain/env";
 import { firePayload, fireRaw } from "@/lib/simulator/fire";
 import {
@@ -10,6 +11,8 @@ import {
   duplicate,
   malformedMissingRequiredFields,
   orderCreated,
+  orderReturned,
+  orderShipped,
   overshootOrder,
   unknownSkuOrder,
 } from "@/lib/simulator/payloads";
@@ -36,10 +39,32 @@ const bodySchema = z
       "unknown-sku",
       "overshoot",
       "invalid-json",
+      "ship-latest",
+      "return-latest",
     ]),
     count: z.number().int().positive().max(200).optional(),
   })
   .strict();
+
+const CHANNEL_ID = "tiktok_shop";
+
+/**
+ * Look up the most recent order in a target status so `ship-latest` and
+ * `return-latest` scenarios have a real target. Returns null if there is
+ * nothing to act on — the caller surfaces a friendly message.
+ */
+async function pickLatestOrderInStatus(status: string): Promise<string | null> {
+  const db = createSupabaseServer();
+  const { data } = await db
+    .from("orders")
+    .select("external_order_id")
+    .eq("channel_id", CHANNEL_ID)
+    .eq("status", status)
+    .order("placed_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data?.external_order_id ?? null;
+}
 
 interface FireOutcome {
   scenario: string;
@@ -119,6 +144,32 @@ export async function POST(req: Request): Promise<Response> {
     case "invalid-json":
       results.push(await fireRaw("{ this is not json ]", opts));
       break;
+
+    case "ship-latest": {
+      const target = await pickLatestOrderInStatus("allocated");
+      if (!target) {
+        results.push({
+          status: 404,
+          body: { error: "no allocated orders to ship — send an order first" },
+        });
+        break;
+      }
+      results.push(await firePayload(orderShipped(target), opts));
+      break;
+    }
+
+    case "return-latest": {
+      const target = await pickLatestOrderInStatus("shipped");
+      if (!target) {
+        results.push({
+          status: 404,
+          body: { error: "no shipped orders to return — ship one first" },
+        });
+        break;
+      }
+      results.push(await firePayload(orderReturned(target), opts));
+      break;
+    }
   }
 
   const outcome: FireOutcome = {

@@ -14,7 +14,7 @@ A hardened, multi-brand inventory and order ledger on their exact stack (Supabas
 4. **Live ops dashboard**: Supabase Realtime order feed, GMV-today tickers per brand/channel, stock table (on_hand / committed / available with low-stock badges), DLQ panel with retry, reconciliation findings panel with a Run button.
 5. **NL ops query**: "show Voltcore orders over $100 today" → Claude → zod-validated filter spec → query builder → results table. Your Pydantic JobFilterSpec pattern ported to TypeScript: the model proposes, zod disposes.
 
-**Deliberately out of scope (say this list out loud when asked, it shows judgment):** real marketplace APIs, returns UI, transfers, client portal, payments, shipping labels, accounting sync, real auth beyond a single ops login. Schema supports several of these already; UI does not.
+**Deliberately out of scope (say this list out loud when asked, it shows judgment):** real marketplace APIs, transfers, client portal, payments, shipping labels, accounting sync, real auth beyond a single ops login, inspection flow for returned goods. Schema supports several of these already; UI does not. (Note: ship + return lifecycle was originally in this list but landed after the sprint via migration 007 / PR #8.)
 
 ---
 
