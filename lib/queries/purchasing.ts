@@ -100,6 +100,119 @@ export interface AgedInventoryRow {
   dollars_at_risk_cents: number;
 }
 
+// ----------------------------------------------------------------------------
+// PO detail: header + lines (with per-line received qty)
+// ----------------------------------------------------------------------------
+
+export interface PurchaseOrderLineRow {
+  id: string;
+  product_id: string;
+  sku: string;
+  title: string;
+  qty_ordered: number;
+  qty_received: number;
+  unit_cost_cents: number;
+  fully_received: boolean;
+}
+
+export interface PurchaseOrderDetail extends PurchaseOrderRow {
+  lines: PurchaseOrderLineRow[];
+}
+
+export async function getPurchaseOrderDetail(
+  db: Db,
+  poId: string,
+): Promise<PurchaseOrderDetail | null> {
+  const [header] = await getPurchaseOrders(db, { limit: 1 }).then((all) =>
+    all.filter((r) => r.id === poId),
+  );
+  if (!header) {
+    // fall back: the caller might not have the row cached in the dashboard view
+    const { data } = await db
+      .from("purchase_orders_dashboard")
+      .select(
+        "id, brand_id, brand_name, supplier_id, supplier_name, status, expected_at, created_at, line_count, qty_ordered, total_cost_cents, qty_received, receive_fraction, days_outstanding",
+      )
+      .eq("id", poId)
+      .maybeSingle();
+    if (!data) return null;
+    return {
+      id: data.id ?? "",
+      brand_id: data.brand_id ?? "",
+      brand_name: data.brand_name ?? "",
+      supplier_id: data.supplier_id ?? null,
+      supplier_name: data.supplier_name ?? null,
+      status: (data.status ?? "placed") as POStatus,
+      expected_at: data.expected_at ?? null,
+      created_at: data.created_at ?? new Date(0).toISOString(),
+      line_count: data.line_count ?? 0,
+      qty_ordered: data.qty_ordered ?? 0,
+      total_cost_cents: Number(data.total_cost_cents ?? 0),
+      qty_received: data.qty_received ?? 0,
+      receive_fraction: Number(data.receive_fraction ?? 0),
+      days_outstanding: Number(data.days_outstanding ?? 0),
+      lines: await getPurchaseOrderLines(db, poId),
+    };
+  }
+  return { ...header, lines: await getPurchaseOrderLines(db, poId) };
+}
+
+async function getPurchaseOrderLines(
+  db: Db,
+  poId: string,
+): Promise<PurchaseOrderLineRow[]> {
+  const { data: lines, error } = await db
+    .from("purchase_order_lines")
+    .select("id, product_id, qty_ordered, unit_cost_cents")
+    .eq("purchase_order_id", poId);
+  if (error) throw new Error(`purchase_order_lines read failed: ${error.message}`);
+
+  const lineIds = (lines ?? []).map((l) => l.id!).filter(Boolean) as string[];
+  const productIds = (lines ?? []).map((l) => l.product_id!).filter(Boolean) as string[];
+
+  const [receiptsRes, productsRes] = await Promise.all([
+    lineIds.length
+      ? db
+          .from("receipts")
+          .select("purchase_order_line_id, qty_received")
+          .in("purchase_order_line_id", lineIds)
+      : Promise.resolve({ data: [] as { purchase_order_line_id: string; qty_received: number }[], error: null }),
+    productIds.length
+      ? db
+          .from("products")
+          .select("id, sku, title")
+          .in("id", productIds)
+      : Promise.resolve({ data: [] as { id: string; sku: string; title: string }[], error: null }),
+  ]);
+  if (receiptsRes.error) throw new Error(`receipts read failed: ${receiptsRes.error.message}`);
+  if (productsRes.error) throw new Error(`products read failed: ${productsRes.error.message}`);
+
+  const receivedByLine = new Map<string, number>();
+  for (const r of receiptsRes.data ?? []) {
+    const lineId = r.purchase_order_line_id ?? "";
+    receivedByLine.set(lineId, (receivedByLine.get(lineId) ?? 0) + (r.qty_received ?? 0));
+  }
+  const productById = new Map<string, { sku: string; title: string }>();
+  for (const p of productsRes.data ?? []) {
+    productById.set(p.id ?? "", { sku: p.sku ?? "", title: p.title ?? "" });
+  }
+
+  return (lines ?? []).map((l) => {
+    const product = productById.get(l.product_id ?? "") ?? { sku: "", title: "" };
+    const qtyReceived = receivedByLine.get(l.id ?? "") ?? 0;
+    return {
+      id: l.id ?? "",
+      product_id: l.product_id ?? "",
+      sku: product.sku,
+      title: product.title,
+      qty_ordered: l.qty_ordered ?? 0,
+      qty_received: qtyReceived,
+      unit_cost_cents: l.unit_cost_cents ?? 0,
+      fully_received: qtyReceived >= (l.qty_ordered ?? 0),
+    };
+  });
+}
+
 export async function getAgedInventory(
   db: Db,
   opts: { minDays?: number; limit?: number } = {},

@@ -116,9 +116,12 @@ describeIntegration("purchasing + margin schema", () => {
 
     const history = await getLandedCostHistory(db, { productId: product!.id });
     expect(history.length).toBeGreaterThan(0);
-    expect(history[0].landed_unit_cents).toBe(3900);
-    expect(history[0].sku).toBe("VC-BT-100");
-    expect(history[0].brand_name).toMatch(/Voltcore/i);
+    // Locate the row we just inserted rather than assuming it's the most
+    // recent (M1-C/D's receive_shipment tests may have written newer rows).
+    const ourRow = history.find((r) => r.id === inserted!.id);
+    expect(ourRow?.landed_unit_cents).toBe(3900);
+    expect(ourRow?.sku).toBe("VC-BT-100");
+    expect(ourRow?.brand_name).toMatch(/Voltcore/i);
 
     // cleanup
     await db.from("landed_costs").delete().eq("id", inserted!.id);
@@ -189,22 +192,34 @@ describeIntegration("purchasing + margin schema", () => {
   });
 
   it("margin_snapshots: net_margin_cents is a generated column", async () => {
-    // Grab any order + a line
-    const { data: line } = await db
+    // Find an order_line that DOESN'T have a snapshot yet (M1-D's ship_order
+    // trigger auto-writes snapshots on every ship). If nothing is available,
+    // create a throwaway order + line to test against.
+    const { data: candidates } = await db
       .from("order_lines")
       .select("id, order_id")
-      .limit(1)
-      .maybeSingle();
-    if (!line) {
-      // no orders yet in this seed state — skip via early return
-      return;
+      .limit(50);
+    let orderLineId: string | undefined;
+    let orderId: string | undefined;
+    for (const l of candidates ?? []) {
+      const { data: existing } = await db
+        .from("margin_snapshots")
+        .select("order_line_id")
+        .eq("order_line_id", l.id)
+        .maybeSingle();
+      if (!existing) {
+        orderLineId = l.id;
+        orderId = l.order_id;
+        break;
+      }
     }
+    if (!orderLineId || !orderId) return; // every line snapshotted; skip
 
     const { data: inserted, error } = await db
       .from("margin_snapshots")
       .insert({
-        order_id: line.order_id,
-        order_line_id: line.id,
+        order_id: orderId,
+        order_line_id: orderLineId,
         gross_revenue_cents: 10000,
         fee_cents: 800,
         landed_cost_cents: 5000,
@@ -215,6 +230,6 @@ describeIntegration("purchasing + margin schema", () => {
     expect(inserted?.net_margin_cents).toBe(4200);
 
     // cleanup
-    await db.from("margin_snapshots").delete().eq("order_line_id", line.id);
+    await db.from("margin_snapshots").delete().eq("order_line_id", orderLineId);
   });
 });
