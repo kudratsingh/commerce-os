@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { POST as tiktokWebhookRoute } from "@/app/api/webhooks/tiktok/route";
 import { requireOpsSecret } from "@/lib/auth/ops-secret";
 import { serverEnv } from "@/lib/domain/env";
 import { firePayload, fireRaw } from "@/lib/simulator/fire";
@@ -66,11 +67,14 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   const env = serverEnv();
-  const secret = env.WEBHOOK_SHARED_SECRET;
-
-  // Fire at THIS worker's own webhook route. Derive base from the request so
-  // it works identically in local dev and in the deployed Worker.
-  const url = new URL("/api/webhooks/tiktok", req.url).toString();
+  // Direct call into the webhook route handler — same code path an external
+  // POST would take, but no network. Avoids the Cloudflare Access loop
+  // where an internal fetch back to the worker's own URL gets intercepted
+  // and redirected to the Access login page.
+  const opts = {
+    secret: env.WEBHOOK_SHARED_SECRET,
+    webhookHandler: tiktokWebhookRoute,
+  } as const;
   const start = Date.now();
   const scenario = parsed.data.scenario;
 
@@ -78,42 +82,42 @@ export async function POST(req: Request): Promise<Response> {
 
   switch (scenario) {
     case "one": {
-      results.push(await firePayload(orderCreated(), { url, secret }));
+      results.push(await firePayload(orderCreated(), opts));
       break;
     }
     case "burst": {
       const n = parsed.data.count ?? 50;
       const payloads = burst(n);
       const out = await Promise.all(
-        payloads.map((p) => firePayload(p, { url, secret })),
+        payloads.map((p) => firePayload(p, opts)),
       );
       results.push(...out);
       break;
     }
     case "duplicate": {
       const p = orderCreated();
-      results.push(await firePayload(p, { url, secret }));
-      results.push(await firePayload(duplicate(p), { url, secret }));
+      results.push(await firePayload(p, opts));
+      results.push(await firePayload(duplicate(p), opts));
       break;
     }
     case "malformed":
       results.push(
-        await firePayload(malformedMissingRequiredFields(), { url, secret }),
+        await firePayload(malformedMissingRequiredFields(), opts),
       );
       break;
     case "bad-signature":
       results.push(
-        await firePayload(orderCreated(), { url, secret, useBadSecret: true }),
+        await firePayload(orderCreated(), { ...opts, useBadSecret: true }),
       );
       break;
     case "unknown-sku":
-      results.push(await firePayload(unknownSkuOrder(), { url, secret }));
+      results.push(await firePayload(unknownSkuOrder(), opts));
       break;
     case "overshoot":
-      results.push(await firePayload(overshootOrder(), { url, secret }));
+      results.push(await firePayload(overshootOrder(), opts));
       break;
     case "invalid-json":
-      results.push(await fireRaw("{ this is not json ]", { url, secret }));
+      results.push(await fireRaw("{ this is not json ]", opts));
       break;
   }
 
