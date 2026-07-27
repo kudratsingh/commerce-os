@@ -89,6 +89,13 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "channel_inventory_reports_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["product_id"]
+          },
         ]
       }
       channel_listings: {
@@ -127,6 +134,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_listings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["product_id"]
           },
         ]
       }
@@ -197,11 +211,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "order_lines_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "recent_orders"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "order_lines_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_lines_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["product_id"]
           },
         ]
       }
@@ -249,6 +277,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "brands"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["brand_id"]
           },
           {
             foreignKeyName: "orders_channel_id_fkey"
@@ -337,6 +372,13 @@ export type Database = {
             referencedRelation: "brands"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "products_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["brand_id"]
+          },
         ]
       }
       purchase_order_lines: {
@@ -368,6 +410,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_lines_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "purchase_order_lines_purchase_order_id_fkey"
@@ -410,6 +459,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "brands"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["brand_id"]
           },
         ]
       }
@@ -518,6 +574,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "reconciliation_findings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["product_id"]
+          },
+          {
             foreignKeyName: "reconciliation_findings_run_id_fkey"
             columns: ["run_id"]
             isOneToOne: false
@@ -581,6 +644,13 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "stock_levels_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["product_id"]
+          },
         ]
       }
       stock_movements: {
@@ -634,6 +704,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["product_id"]
           },
         ]
       }
@@ -702,6 +779,13 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "stock_levels_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["product_id"]
+          },
         ]
       }
       current_stock_from_ledger: {
@@ -725,6 +809,79 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["product_id"]
+          },
+        ]
+      }
+      dashboard_summary: {
+        Row: {
+          backordered_count: number | null
+          dead_count: number | null
+          dlq_count: number | null
+          failed_count: number | null
+          gmv_cents: number | null
+          orders_count: number | null
+          processed_count: number | null
+          received_count: number | null
+        }
+        Relationships: []
+      }
+      dlq_events: {
+        Row: {
+          attempts: number | null
+          channel_id: string | null
+          event_type: string | null
+          external_event_id: string | null
+          external_order_id: string | null
+          id: string | null
+          last_error: string | null
+          payload: Json | null
+          processed_at: string | null
+          received_at: string | null
+          signature_valid: boolean | null
+          status: string | null
+        }
+        Insert: {
+          attempts?: number | null
+          channel_id?: string | null
+          event_type?: string | null
+          external_event_id?: string | null
+          external_order_id?: never
+          id?: string | null
+          last_error?: string | null
+          payload?: Json | null
+          processed_at?: string | null
+          received_at?: string | null
+          signature_valid?: boolean | null
+          status?: string | null
+        }
+        Update: {
+          attempts?: number | null
+          channel_id?: string | null
+          event_type?: string | null
+          external_event_id?: string | null
+          external_order_id?: never
+          id?: string | null
+          last_error?: string | null
+          payload?: Json | null
+          processed_at?: string | null
+          received_at?: string | null
+          signature_valid?: boolean | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_events_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
         ]
       }
       gmv_today: {
@@ -743,10 +900,90 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["brand_id"]
+          },
+          {
             foreignKeyName: "orders_channel_id_fkey"
             columns: ["channel_id"]
             isOneToOne: false
             referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ingestion_counters_today: {
+        Row: {
+          dead_count: number | null
+          failed_count: number | null
+          processed_count: number | null
+          received_count: number | null
+          total_count: number | null
+        }
+        Relationships: []
+      }
+      recent_orders: {
+        Row: {
+          brand_id: string | null
+          brand_name: string | null
+          buyer_handle: string | null
+          channel_id: string | null
+          created_at: string | null
+          external_order_id: string | null
+          id: string | null
+          placed_at: string | null
+          status: string | null
+          subtotal_cents: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "orders_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_dashboard: {
+        Row: {
+          available: number | null
+          brand_id: string | null
+          brand_name: string | null
+          committed: number | null
+          cost_cents: number | null
+          location_id: string | null
+          location_name: string | null
+          low_stock: boolean | null
+          on_hand: number | null
+          price_cents: number | null
+          product_id: string | null
+          sku: string | null
+          title: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_levels_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
             referencedColumns: ["id"]
           },
         ]
@@ -807,6 +1044,10 @@ export type Database = {
           p_qty: number
         }
         Returns: string
+      }
+      retry_webhook_event: {
+        Args: { p_event_id: string; p_location_id: string }
+        Returns: Json
       }
       run_reconciliation: { Args: never; Returns: string }
       ship_order: {
