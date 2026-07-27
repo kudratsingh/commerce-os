@@ -34,6 +34,171 @@ export type Database = {
   }
   public: {
     Tables: {
+      _test_baseline_channel_inventory_reports: {
+        Row: {
+          channel_id: string | null
+          id: number | null
+          product_id: string | null
+          reported_at: string | null
+          reported_qty: number | null
+        }
+        Insert: {
+          channel_id?: string | null
+          id?: number | null
+          product_id?: string | null
+          reported_at?: string | null
+          reported_qty?: number | null
+        }
+        Update: {
+          channel_id?: string | null
+          id?: number | null
+          product_id?: string | null
+          reported_at?: string | null
+          reported_qty?: number | null
+        }
+        Relationships: []
+      }
+      _test_baseline_purchase_order_lines: {
+        Row: {
+          id: string | null
+          product_id: string | null
+          purchase_order_id: string | null
+          qty_ordered: number | null
+          unit_cost_cents: number | null
+        }
+        Insert: {
+          id?: string | null
+          product_id?: string | null
+          purchase_order_id?: string | null
+          qty_ordered?: number | null
+          unit_cost_cents?: number | null
+        }
+        Update: {
+          id?: string | null
+          product_id?: string | null
+          purchase_order_id?: string | null
+          qty_ordered?: number | null
+          unit_cost_cents?: number | null
+        }
+        Relationships: []
+      }
+      _test_baseline_purchase_orders: {
+        Row: {
+          brand_id: string | null
+          created_at: string | null
+          expected_at: string | null
+          id: string | null
+          status: string | null
+          supplier: string | null
+          supplier_id: string | null
+        }
+        Insert: {
+          brand_id?: string | null
+          created_at?: string | null
+          expected_at?: string | null
+          id?: string | null
+          status?: string | null
+          supplier?: string | null
+          supplier_id?: string | null
+        }
+        Update: {
+          brand_id?: string | null
+          created_at?: string | null
+          expected_at?: string | null
+          id?: string | null
+          status?: string | null
+          supplier?: string | null
+          supplier_id?: string | null
+        }
+        Relationships: []
+      }
+      _test_baseline_receipts: {
+        Row: {
+          id: string | null
+          location_id: string | null
+          purchase_order_line_id: string | null
+          qty_received: number | null
+          received_at: string | null
+          received_by: string | null
+        }
+        Insert: {
+          id?: string | null
+          location_id?: string | null
+          purchase_order_line_id?: string | null
+          qty_received?: number | null
+          received_at?: string | null
+          received_by?: string | null
+        }
+        Update: {
+          id?: string | null
+          location_id?: string | null
+          purchase_order_line_id?: string | null
+          qty_received?: number | null
+          received_at?: string | null
+          received_by?: string | null
+        }
+        Relationships: []
+      }
+      _test_baseline_stock_levels: {
+        Row: {
+          committed: number | null
+          location_id: string
+          on_hand: number | null
+          product_id: string
+        }
+        Insert: {
+          committed?: number | null
+          location_id: string
+          on_hand?: number | null
+          product_id: string
+        }
+        Update: {
+          committed?: number | null
+          location_id?: string
+          on_hand?: number | null
+          product_id?: string
+        }
+        Relationships: []
+      }
+      _test_baseline_stock_movements: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: number | null
+          location_id: string | null
+          note: string | null
+          product_id: string | null
+          qty_delta: number | null
+          reason: string | null
+          ref_id: string | null
+          ref_type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: number | null
+          location_id?: string | null
+          note?: string | null
+          product_id?: string | null
+          qty_delta?: number | null
+          reason?: string | null
+          ref_id?: string | null
+          ref_type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: number | null
+          location_id?: string | null
+          note?: string | null
+          product_id?: string | null
+          qty_delta?: number | null
+          reason?: string | null
+          ref_id?: string | null
+          ref_type?: string | null
+        }
+        Relationships: []
+      }
       brands: {
         Row: {
           created_at: string
@@ -2158,6 +2323,7 @@ export type Database = {
         }
         Returns: string
       }
+      reset_test_state: { Args: never; Returns: undefined }
       resolve_findings_with_no_drift: { Args: never; Returns: number }
       resolve_reconciliation_finding:
         | { Args: { p_finding_id: number }; Returns: Json }

@@ -12,6 +12,7 @@ import {
   overshootOrder,
   unknownSkuOrder,
 } from "@/lib/simulator/payloads";
+import { resetEphemera } from "@/tests/helpers/reset-ephemera";
 
 /**
  * Integration tests — hit the real POST handler with a real Request against
@@ -36,6 +37,7 @@ describeIntegration("webhook ingestion", () => {
   let vanNuysLocationId: string;
 
   beforeAll(async () => {
+    await resetEphemera();
     db = createClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,

@@ -5,6 +5,7 @@ import { POST as erpWebhookRoute } from "@/app/api/webhooks/erp/route";
 import type { Database } from "@/lib/db/database.types";
 import { signBody } from "@/lib/domain/hmac";
 import { esiCount, esiDamage } from "@/lib/simulator/payloads";
+import { resetEphemera } from "@/tests/helpers/reset-ephemera";
 
 /**
  * ESI/ERP mastership tests (ADR-011, migration 013).
@@ -32,6 +33,7 @@ describeIntegration("ESI/ERP mastership", () => {
   let vanNuysId: string;
 
   beforeAll(async () => {
+    await resetEphemera();
     db = createClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
