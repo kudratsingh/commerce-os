@@ -86,8 +86,22 @@ export type Database = {
             foreignKeyName: "channel_inventory_reports_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "channel_inventory_reports_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_inventory_reports_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "channel_inventory_reports_product_id_fkey"
@@ -132,8 +146,22 @@ export type Database = {
             foreignKeyName: "channel_listings_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "channel_listings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_listings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "channel_listings_product_id_fkey"
@@ -159,6 +187,184 @@ export type Database = {
         }
         Relationships: []
       }
+      fee_schedules: {
+        Row: {
+          brand_id: string | null
+          category: string | null
+          channel_id: string
+          created_at: string
+          effective_from: string
+          effective_until: string | null
+          fee_flat_cents: number
+          fee_pct_bps: number
+          id: string
+          product_id: string | null
+        }
+        Insert: {
+          brand_id?: string | null
+          category?: string | null
+          channel_id: string
+          created_at?: string
+          effective_from?: string
+          effective_until?: string | null
+          fee_flat_cents?: number
+          fee_pct_bps: number
+          id?: string
+          product_id?: string | null
+        }
+        Update: {
+          brand_id?: string | null
+          category?: string | null
+          channel_id?: string
+          created_at?: string
+          effective_from?: string
+          effective_until?: string | null
+          fee_flat_cents?: number
+          fee_pct_bps?: number
+          id?: string
+          product_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_schedules_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "fee_schedules_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_schedules_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "fee_schedules_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "fee_schedules_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_schedules_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "fee_schedules_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_schedules_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "fee_schedules_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["product_id"]
+          },
+        ]
+      }
+      landed_costs: {
+        Row: {
+          duties_cents: number
+          freight_cents: number
+          handling_cents: number
+          id: string
+          landed_unit_cents: number | null
+          product_id: string
+          qty: number
+          receipt_id: string
+          received_at: string
+          unit_cost_cents: number
+        }
+        Insert: {
+          duties_cents?: number
+          freight_cents?: number
+          handling_cents?: number
+          id?: string
+          landed_unit_cents?: number | null
+          product_id: string
+          qty: number
+          receipt_id: string
+          received_at?: string
+          unit_cost_cents: number
+        }
+        Update: {
+          duties_cents?: number
+          freight_cents?: number
+          handling_cents?: number
+          id?: string
+          landed_unit_cents?: number | null
+          product_id?: string
+          qty?: number
+          receipt_id?: string
+          received_at?: string
+          unit_cost_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landed_costs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "landed_costs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "landed_costs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "landed_costs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "landed_costs_receipt_id_fkey"
+            columns: ["receipt_id"]
+            isOneToOne: false
+            referencedRelation: "receipts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       locations: {
         Row: {
           created_at: string
@@ -179,6 +385,58 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      margin_snapshots: {
+        Row: {
+          computed_at: string
+          fee_cents: number
+          gross_revenue_cents: number
+          landed_cost_cents: number
+          net_margin_cents: number | null
+          order_id: string
+          order_line_id: string
+        }
+        Insert: {
+          computed_at?: string
+          fee_cents: number
+          gross_revenue_cents: number
+          landed_cost_cents: number
+          net_margin_cents?: number | null
+          order_id: string
+          order_line_id: string
+        }
+        Update: {
+          computed_at?: string
+          fee_cents?: number
+          gross_revenue_cents?: number
+          landed_cost_cents?: number
+          net_margin_cents?: number | null
+          order_id?: string
+          order_line_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "margin_snapshots_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "margin_snapshots_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "recent_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "margin_snapshots_order_line_id_fkey"
+            columns: ["order_line_id"]
+            isOneToOne: true
+            referencedRelation: "order_lines"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_lines: {
         Row: {
@@ -221,8 +479,22 @@ export type Database = {
             foreignKeyName: "order_lines_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "order_lines_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_lines_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "order_lines_product_id_fkey"
@@ -275,8 +547,22 @@ export type Database = {
             foreignKeyName: "orders_brand_id_fkey"
             columns: ["brand_id"]
             isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
             referencedRelation: "brands"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["brand_id"]
           },
           {
             foreignKeyName: "orders_brand_id_fkey"
@@ -369,8 +655,22 @@ export type Database = {
             foreignKeyName: "products_brand_id_fkey"
             columns: ["brand_id"]
             isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "products_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
             referencedRelation: "brands"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["brand_id"]
           },
           {
             foreignKeyName: "products_brand_id_fkey"
@@ -408,8 +708,22 @@ export type Database = {
             foreignKeyName: "purchase_order_lines_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "purchase_order_lines_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_lines_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "purchase_order_lines_product_id_fkey"
@@ -425,6 +739,13 @@ export type Database = {
             referencedRelation: "purchase_orders"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "purchase_order_lines_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders_dashboard"
+            referencedColumns: ["id"]
+          },
         ]
       }
       purchase_orders: {
@@ -434,7 +755,8 @@ export type Database = {
           expected_at: string | null
           id: string
           status: string
-          supplier: string
+          supplier: string | null
+          supplier_id: string | null
         }
         Insert: {
           brand_id: string
@@ -442,7 +764,8 @@ export type Database = {
           expected_at?: string | null
           id?: string
           status?: string
-          supplier: string
+          supplier?: string | null
+          supplier_id?: string | null
         }
         Update: {
           brand_id?: string
@@ -450,9 +773,17 @@ export type Database = {
           expected_at?: string | null
           id?: string
           status?: string
-          supplier?: string
+          supplier?: string | null
+          supplier_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "purchase_orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["brand_id"]
+          },
           {
             foreignKeyName: "purchase_orders_brand_id_fkey"
             columns: ["brand_id"]
@@ -464,8 +795,22 @@ export type Database = {
             foreignKeyName: "purchase_orders_brand_id_fkey"
             columns: ["brand_id"]
             isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
             referencedRelation: "stock_dashboard"
             referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -570,8 +915,22 @@ export type Database = {
             foreignKeyName: "reconciliation_findings_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "reconciliation_findings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reconciliation_findings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "reconciliation_findings_product_id_fkey"
@@ -617,6 +976,72 @@ export type Database = {
         }
         Relationships: []
       }
+      reorder_points: {
+        Row: {
+          auto_generated: boolean
+          location_id: string
+          min_qty: number
+          product_id: string
+          target_qty: number
+          updated_at: string
+          velocity_window: string
+        }
+        Insert: {
+          auto_generated?: boolean
+          location_id: string
+          min_qty: number
+          product_id: string
+          target_qty: number
+          updated_at?: string
+          velocity_window?: string
+        }
+        Update: {
+          auto_generated?: boolean
+          location_id?: string
+          min_qty?: number
+          product_id?: string
+          target_qty?: number
+          updated_at?: string
+          velocity_window?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reorder_points_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reorder_points_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "reorder_points_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reorder_points_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "reorder_points_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["product_id"]
+          },
+        ]
+      }
       stock_levels: {
         Row: {
           committed: number
@@ -648,8 +1073,22 @@ export type Database = {
             foreignKeyName: "stock_levels_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "stock_levels_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_levels_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "stock_levels_product_id_fkey"
@@ -709,8 +1148,22 @@ export type Database = {
             foreignKeyName: "stock_movements_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "stock_movements_product_id_fkey"
@@ -720,6 +1173,108 @@ export type Database = {
             referencedColumns: ["product_id"]
           },
         ]
+      }
+      supplier_products: {
+        Row: {
+          created_at: string
+          id: string
+          is_primary: boolean
+          lead_time_days: number
+          moq: number
+          product_id: string
+          supplier_id: string
+          supplier_sku: string | null
+          unit_cost_cents: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          lead_time_days: number
+          moq?: number
+          product_id: string
+          supplier_id: string
+          supplier_sku?: string | null
+          unit_cost_cents: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          lead_time_days?: number
+          moq?: number
+          product_id?: string
+          supplier_id?: string
+          supplier_sku?: string | null
+          unit_cost_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "supplier_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "supplier_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "supplier_products_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suppliers: {
+        Row: {
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          currency: string
+          id: string
+          name: string
+          notes: string | null
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          name: string
+          notes?: string | null
+        }
+        Update: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          name?: string
+          notes?: string | null
+        }
+        Relationships: []
       }
       webhook_events: {
         Row: {
@@ -773,6 +1328,31 @@ export type Database = {
       }
     }
     Views: {
+      aged_inventory: {
+        Row: {
+          brand_id: string | null
+          brand_name: string | null
+          days_since_last_shipment: number | null
+          dollars_at_risk_cents: number | null
+          last_shipped_at: string | null
+          location_id: string | null
+          location_name: string | null
+          on_hand: number | null
+          product_id: string | null
+          sku: string | null
+          title: string | null
+          unit_cost_cents: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_levels_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       available_to_sell: {
         Row: {
           available: number | null
@@ -783,8 +1363,22 @@ export type Database = {
             foreignKeyName: "stock_levels_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "stock_levels_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_levels_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "stock_levels_product_id_fkey"
@@ -813,8 +1407,22 @@ export type Database = {
             foreignKeyName: "stock_movements_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "stock_movements_product_id_fkey"
@@ -905,8 +1513,22 @@ export type Database = {
             foreignKeyName: "orders_brand_id_fkey"
             columns: ["brand_id"]
             isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
             referencedRelation: "brands"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["brand_id"]
           },
           {
             foreignKeyName: "orders_brand_id_fkey"
@@ -933,6 +1555,69 @@ export type Database = {
           total_count: number | null
         }
         Relationships: []
+      }
+      landed_cost_history: {
+        Row: {
+          brand_name: string | null
+          duties_cents: number | null
+          freight_cents: number | null
+          handling_cents: number | null
+          id: string | null
+          landed_unit_cents: number | null
+          location_id: string | null
+          location_name: string | null
+          product_id: string | null
+          qty: number | null
+          receipt_id: string | null
+          received_at: string | null
+          sku: string | null
+          title: string | null
+          unit_cost_cents: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landed_costs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "landed_costs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "landed_costs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "landed_costs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "landed_costs_receipt_id_fkey"
+            columns: ["receipt_id"]
+            isOneToOne: false
+            referencedRelation: "receipts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipts_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       open_findings: {
         Row: {
@@ -971,8 +1656,22 @@ export type Database = {
             foreignKeyName: "reconciliation_findings_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "reconciliation_findings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reconciliation_findings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "reconciliation_findings_product_id_fkey"
@@ -997,6 +1696,61 @@ export type Database = {
           },
         ]
       }
+      purchase_orders_dashboard: {
+        Row: {
+          brand_id: string | null
+          brand_name: string | null
+          created_at: string | null
+          days_outstanding: number | null
+          expected_at: string | null
+          id: string | null
+          line_count: number | null
+          qty_ordered: number | null
+          qty_received: number | null
+          receive_fraction: number | null
+          status: string | null
+          supplier_id: string | null
+          supplier_name: string | null
+          total_cost_cents: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recent_orders: {
         Row: {
           brand_id: string | null
@@ -1015,8 +1769,22 @@ export type Database = {
             foreignKeyName: "orders_brand_id_fkey"
             columns: ["brand_id"]
             isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
             referencedRelation: "brands"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["brand_id"]
           },
           {
             foreignKeyName: "orders_brand_id_fkey"
@@ -1043,6 +1811,31 @@ export type Database = {
           started_at: string | null
         }
         Relationships: []
+      }
+      sku_margin_by_channel: {
+        Row: {
+          avg_fee_cents: number | null
+          avg_gross_revenue_cents: number | null
+          avg_landed_cost_cents: number | null
+          avg_net_margin_cents: number | null
+          brand_id: string | null
+          brand_name: string | null
+          channel_id: string | null
+          net_margin_pct: number | null
+          orders_in_window: number | null
+          product_id: string | null
+          sku: string | null
+          title: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stock_dashboard: {
         Row: {

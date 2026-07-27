@@ -310,4 +310,4 @@ Integration coverage per PR listed above.
 
 ## Landed
 
-_This section fills in with merged PR numbers as they land._
+- **PR M1-A** (`feat/purchasing-schema-and-reads`) — migration 008 (six new tables + backfill + four read-model views), `lib/queries/purchasing.ts`, `lib/queries/margin.ts`, 7 integration tests.
