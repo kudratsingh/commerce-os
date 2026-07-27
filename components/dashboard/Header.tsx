@@ -28,6 +28,7 @@ export function Header() {
             <NavLink href="/">Dashboard</NavLink>
             <NavLink href="/purchasing">Purchasing</NavLink>
             <NavLink href="/replenishment">Reorder</NavLink>
+            <NavLink href="/creators">Creators</NavLink>
             <NavLink href="/margin">Margin</NavLink>
             <NavLink href="/inventory/aged">Aged</NavLink>
             <NavLink href="/simulator">Simulator</NavLink>

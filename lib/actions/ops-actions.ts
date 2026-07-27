@@ -1,5 +1,7 @@
 "use server";
 
+import { POST as touchpointRoute } from "@/app/api/creators/[id]/touchpoints/route";
+import { POST as createCreatorRoute } from "@/app/api/creators/route";
 import { POST as retryDlqRoute } from "@/app/api/dlq/retry/route";
 import { POST as sweepOutboxRoute } from "@/app/api/jobs/outbox-sweep/route";
 import { POST as nlQueryRoute } from "@/app/api/nl-query/route";
@@ -329,6 +331,80 @@ export async function upsertReorderPointAction(
   return callRoute<UpsertReorderPointResponse>(
     upsertReorderPointRoute,
     "/api/reorder-points",
+    input,
+  );
+}
+
+// ----------------------------------------------------------------------------
+// Creators (Module 4 M4-A/B)
+// ----------------------------------------------------------------------------
+
+export interface CreateCreatorInput {
+  handle: string;
+  platform: "tiktok" | "instagram" | "youtube" | "twitch" | "other";
+  display_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  base_country?: string;
+  primary_categories?: string[];
+  follower_count?: number;
+  engagement_rate?: number;
+}
+
+export interface CreateCreatorResponse {
+  creator?: {
+    id: string;
+    handle: string;
+    platform: string;
+    status: string;
+  };
+  error?: string;
+}
+
+export async function createCreatorAction(
+  input: CreateCreatorInput,
+): Promise<RouteResult<CreateCreatorResponse>> {
+  return callRoute<CreateCreatorResponse>(
+    createCreatorRoute,
+    "/api/creators",
+    input,
+  );
+}
+
+export interface RegisterTouchpointInput {
+  kind:
+    | "outreach"
+    | "reply"
+    | "call"
+    | "meeting"
+    | "sample_request"
+    | "sample_ship"
+    | "contract"
+    | "payment"
+    | "other";
+  direction: "outbound" | "inbound";
+  medium?: string;
+  notes?: string;
+  actor?: string;
+  occurred_at?: string;
+}
+
+export interface RegisterTouchpointResponse {
+  touchpoint_id?: number;
+  creator_id?: string;
+  previous_status?: string;
+  new_status?: string;
+  error?: string;
+}
+
+export async function registerTouchpointAction(
+  creatorId: string,
+  input: RegisterTouchpointInput,
+): Promise<RouteResult<RegisterTouchpointResponse>> {
+  return callRouteWithParams<RegisterTouchpointResponse>(
+    touchpointRoute,
+    `/api/creators/${creatorId}/touchpoints`,
+    creatorId,
     input,
   );
 }
