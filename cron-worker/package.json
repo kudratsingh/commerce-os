@@ -1,0 +1,17 @@
+{
+  "name": "commerce-os-cron",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cron trigger for the Commerce OS outbox sweeper (separate Worker so the main OpenNext build stays clean).",
+  "scripts": {
+    "dev": "wrangler dev --local",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260727.1",
+    "typescript": "^5",
+    "wrangler": "^4.30.0"
+  }
+}
