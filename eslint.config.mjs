@@ -16,6 +16,8 @@ const eslintConfig = defineConfig([
     ".open-next/**",
     // Generated Supabase types.
     "lib/db/database.types.ts",
+    // Separate Cloudflare Worker with its own tsconfig / lint config.
+    "cron-worker/**",
   ]),
 ]);
 

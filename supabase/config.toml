@@ -64,11 +64,13 @@ enabled = true
 schema_paths = []
 
 [db.seed]
-# If enabled, seeds the database after migrations during a db reset.
-enabled = true
-# Specifies an ordered list of seed files to load during db reset.
-# Supports glob patterns relative to supabase directory: "./seeds/*.sql"
-sql_paths = ["./seed.sql"]
+# Disabled on purpose: `supabase db reset` gives a truly clean slate so
+# db/tests/invariants.sql runs against migrations alone. The realistic
+# demo state (30 orders, ships, DLQ, one open finding) is applied
+# explicitly by `pnpm seed:demo`, which loads supabase/demo-seed.sql via
+# psql after resetting.
+enabled = false
+sql_paths = ["./demo-seed.sql"]
 
 [db.network_restrictions]
 # Enable management of network restrictions.

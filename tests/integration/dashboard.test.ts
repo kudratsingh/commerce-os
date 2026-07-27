@@ -9,7 +9,7 @@ import { getDlqEvents } from "@/lib/queries/dlq";
 import { getRecentOrders } from "@/lib/queries/orders";
 import { getStockLevels } from "@/lib/queries/stock";
 import { getDashboardSummary } from "@/lib/queries/summary";
-import { orderCreated, unknownSkuOrder } from "@/lib/simulator/payloads";
+import { orderCreated } from "@/lib/simulator/payloads";
 
 /**
  * Day-3 integration tests. Covers:
@@ -84,12 +84,18 @@ describeIntegration("dashboard queries + DLQ retry", () => {
   });
 
   it("retry_webhook_event: fix root cause, retry succeeds", async () => {
-    // seed a failing event with an unknown SKU
-    const payload = unknownSkuOrder();
+    // Use a fake SKU unique to this test so we don't collide with
+    // unknownSkuOrder() (used by tests/integration/webhooks.test.ts). A
+    // stray listing left by a failed prior run would silently make the
+    // "unknown SKU" scenario allocate instead of fail.
+    const fakeSku = `TTS-RETRY-TEST-${crypto.randomUUID().slice(0, 8)}`;
+    const payload = orderCreated({
+      lines: [{ external_sku: fakeSku, qty: 1, unit_price_cents: 999 }],
+    });
     await fireWebhook(payload);
 
     // event should be in the DLQ
-    let dlq = await getDlqEvents(db, 25);
+    let dlq = await getDlqEvents(db, 200);
     const target = dlq.find((r) => r.external_event_id === payload.event_id);
     expect(target).toBeDefined();
     expect(target!.status).toBe("failed");
@@ -103,7 +109,7 @@ describeIntegration("dashboard queries + DLQ retry", () => {
       .insert({
         product_id: someProduct!.id,
         channel_id: "tiktok_shop",
-        external_sku: "TTS-DOES-NOT-EXIST",
+        external_sku: fakeSku,
       });
     expect(listingErr).toBeNull();
 
@@ -120,7 +126,7 @@ describeIntegration("dashboard queries + DLQ retry", () => {
     expect(["allocated", "backordered"]).toContain(retryBody.outcome);
 
     // event now processed, no longer in DLQ
-    dlq = await getDlqEvents(db, 25);
+    dlq = await getDlqEvents(db, 200);
     expect(dlq.find((r) => r.external_event_id === payload.event_id)).toBeUndefined();
 
     // cleanup so subsequent tests don't see the listing
@@ -128,7 +134,7 @@ describeIntegration("dashboard queries + DLQ retry", () => {
       .from("channel_listings")
       .delete()
       .eq("channel_id", "tiktok_shop")
-      .eq("external_sku", "TTS-DOES-NOT-EXIST");
+      .eq("external_sku", fakeSku);
   });
 
   it("retry_webhook_event: bad-signature events are refused", async () => {

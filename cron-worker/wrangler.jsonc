@@ -1,0 +1,24 @@
+/**
+ * Cloudflare Worker: commerce-os-cron
+ *
+ * A tiny separate Worker whose only job is to POST /api/jobs/outbox-sweep
+ * on the main worker every minute (Cloudflare Cron Trigger). Deploying it
+ * separately keeps the main Next.js Worker's build pipeline clean — no
+ * OpenNext override needed to inject a `scheduled()` handler.
+ *
+ * Secrets:
+ *   wrangler secret put OUTBOX_SWEEP_URL   # https://commerce-os.<subdomain>.workers.dev/api/jobs/outbox-sweep
+ *   wrangler secret put CRON_SECRET        # matches the main worker's WEBHOOK_SHARED_SECRET
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "commerce-os-cron",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-08-01",
+  "triggers": {
+    "crons": ["* * * * *"]
+  },
+  "observability": {
+    "enabled": true
+  }
+}

@@ -12,7 +12,7 @@
     "test": "vitest run --passWithNoTests",
     "test:integration": "vitest run tests/integration",
     "gen:types": "supabase gen types typescript --local > lib/db/database.types.ts",
-    "seed:demo": "supabase db reset",
+    "seed:demo": "supabase db reset && psql \"postgresql://postgres:postgres@127.0.0.1:54322/postgres\" -f supabase/demo-seed.sql",
     "sim:fire": "tsx --env-file=.env.local scripts/fire-webhook.ts",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
