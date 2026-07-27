@@ -1,27 +1,42 @@
 "use server";
 
-import { headers } from "next/headers";
-
+import { POST as retryDlqRoute } from "@/app/api/dlq/retry/route";
+import { POST as nlQueryRoute } from "@/app/api/nl-query/route";
+import { POST as resolveFindingRoute } from "@/app/api/reconciliation/resolve/route";
+import { POST as runReconciliationRoute } from "@/app/api/reconciliation/run/route";
+import { POST as fireScenarioRoute } from "@/app/api/simulator/fire/route";
+import { POST as skewChannelRoute } from "@/app/api/simulator/skew/route";
 import { serverEnv } from "@/lib/domain/env";
 
 /**
- * Server actions that proxy the ops-only routes with the shared secret
- * attached server-side. Client components call these — the secret never
- * crosses into the browser bundle.
+ * Server actions that proxy the ops-only routes. The secret is injected
+ * server-side (never in the browser bundle — invariant #8).
  *
- * Each action mirrors the shape of the route it proxies (same request body,
- * same response body) so callers can be swapped between action and direct
- * fetch without behavior change.
+ * We call the route handler functions DIRECTLY with a synthetic Request
+ * — no HTTP hop to `self`. This matters on Cloudflare because a
+ * `fetch("https://this-worker/...")` from inside the worker goes back
+ * through the edge, where Cloudflare Access intercepts unauthenticated
+ * requests with a 302 to the login page. Server-side JSON.parse of that
+ * HTML redirect would blow up. Direct function call sidesteps both the
+ * network cost and the Access loop.
+ *
+ * The route handler still performs its zod validation + `requireOpsSecret`
+ * check, so behavior is identical to an external POST.
  */
 
-async function callOpsRoute<T>(path: string, body?: unknown): Promise<{ status: number; body: T }> {
-  const env = serverEnv();
-  const h = await headers();
-  const host = h.get("host") ?? "127.0.0.1:3001";
-  const proto = h.get("x-forwarded-proto") ?? (host.includes("workers.dev") ? "https" : "http");
-  const url = `${proto}://${host}${path}`;
+interface RouteResult<T> {
+  status: number;
+  body: T;
+}
 
-  const res = await fetch(url, {
+async function callRoute<T>(
+  handler: (req: Request) => Promise<Response>,
+  path: string,
+  body?: unknown,
+): Promise<RouteResult<T>> {
+  const env = serverEnv();
+  const url = `http://internal${path}`;
+  const req = new Request(url, {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -29,7 +44,7 @@ async function callOpsRoute<T>(path: string, body?: unknown): Promise<{ status: 
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-
+  const res = await handler(req);
   let parsed: T;
   try {
     parsed = (await res.json()) as T;
@@ -54,8 +69,8 @@ export interface FireResponse {
 export async function fireScenarioAction(
   scenario: string,
   count?: number,
-): Promise<{ status: number; body: FireResponse }> {
-  return callOpsRoute<FireResponse>("/api/simulator/fire", { scenario, count });
+): Promise<RouteResult<FireResponse>> {
+  return callRoute<FireResponse>(fireScenarioRoute, "/api/simulator/fire", { scenario, count });
 }
 
 export interface SkewResponse {
@@ -69,8 +84,12 @@ export async function skewChannelAction(
   channel_id: string,
   sku: string,
   delta: number,
-): Promise<{ status: number; body: SkewResponse }> {
-  return callOpsRoute<SkewResponse>("/api/simulator/skew", { channel_id, sku, delta });
+): Promise<RouteResult<SkewResponse>> {
+  return callRoute<SkewResponse>(skewChannelRoute, "/api/simulator/skew", {
+    channel_id,
+    sku,
+    delta,
+  });
 }
 
 // ----------------------------------------------------------------------------
@@ -82,8 +101,8 @@ export interface RunReconResponse {
   error?: string;
 }
 
-export async function runReconciliationAction(): Promise<{ status: number; body: RunReconResponse }> {
-  return callOpsRoute<RunReconResponse>("/api/reconciliation/run");
+export async function runReconciliationAction(): Promise<RouteResult<RunReconResponse>> {
+  return callRoute<RunReconResponse>(runReconciliationRoute, "/api/reconciliation/run");
 }
 
 export interface ResolveFindingResponse {
@@ -94,8 +113,10 @@ export interface ResolveFindingResponse {
 
 export async function resolveFindingAction(
   finding_id: number,
-): Promise<{ status: number; body: ResolveFindingResponse }> {
-  return callOpsRoute<ResolveFindingResponse>("/api/reconciliation/resolve", { finding_id });
+): Promise<RouteResult<ResolveFindingResponse>> {
+  return callRoute<ResolveFindingResponse>(resolveFindingRoute, "/api/reconciliation/resolve", {
+    finding_id,
+  });
 }
 
 // ----------------------------------------------------------------------------
@@ -112,8 +133,8 @@ export interface RetryResponse {
 
 export async function retryDlqAction(
   event_id: string,
-): Promise<{ status: number; body: RetryResponse }> {
-  return callOpsRoute<RetryResponse>("/api/dlq/retry", { event_id });
+): Promise<RouteResult<RetryResponse>> {
+  return callRoute<RetryResponse>(retryDlqRoute, "/api/dlq/retry", { event_id });
 }
 
 // ----------------------------------------------------------------------------
@@ -131,6 +152,6 @@ export interface NlQueryResponse {
 
 export async function askNlQueryAction(
   question: string,
-): Promise<{ status: number; body: NlQueryResponse }> {
-  return callOpsRoute<NlQueryResponse>("/api/nl-query", { question });
+): Promise<RouteResult<NlQueryResponse>> {
+  return callRoute<NlQueryResponse>(nlQueryRoute, "/api/nl-query", { question });
 }
