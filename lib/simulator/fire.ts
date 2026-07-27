@@ -28,6 +28,8 @@ export interface FireOptions {
   url?: string;
   /** Route handler to invoke directly. If set, no HTTP fetch happens. */
   webhookHandler?: (req: Request) => Promise<Response>;
+  /** Path passed to the synthetic Request (defaults to /api/webhooks/tiktok). */
+  webhookPath?: string;
   /** HMAC secret. */
   secret: string;
   /** Sign with a bogus secret so the verifier rejects (chaos). */
@@ -62,7 +64,8 @@ async function invokeWebhook(body: string, opts: FireOptions): Promise<FireResul
     // Direct call — no network. URL is synthetic; the handler only reads
     // it to derive its own base URL for downstream operations, which we
     // don't use here.
-    const req = new Request("http://internal/api/webhooks/tiktok", {
+    const path = opts.webhookPath ?? "/api/webhooks/tiktok";
+    const req = new Request(`http://internal${path}`, {
       method: "POST",
       headers,
       body,

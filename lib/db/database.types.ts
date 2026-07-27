@@ -187,6 +187,69 @@ export type Database = {
         }
         Relationships: []
       }
+      erp_inventory_reports: {
+        Row: {
+          channel_id: string
+          id: number
+          location_id: string
+          product_id: string
+          reported_at: string
+          reported_qty: number
+        }
+        Insert: {
+          channel_id?: string
+          id?: never
+          location_id: string
+          product_id: string
+          reported_at?: string
+          reported_qty: number
+        }
+        Update: {
+          channel_id?: string
+          id?: never
+          location_id?: string
+          product_id?: string
+          reported_at?: string
+          reported_qty?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_inventory_reports_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_inventory_reports_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "aged_inventory"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "erp_inventory_reports_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_inventory_reports_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "sku_margin_by_channel"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "erp_inventory_reports_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["product_id"]
+          },
+        ]
+      }
       fee_schedules: {
         Row: {
           brand_id: string | null
@@ -1041,6 +1104,24 @@ export type Database = {
             referencedColumns: ["product_id"]
           },
         ]
+      }
+      simulator_config: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
       }
       stock_levels: {
         Row: {
@@ -1921,6 +2002,30 @@ export type Database = {
           outcome: string
         }[]
       }
+      _apply_stock_counted: {
+        Args: { p_payload: Json }
+        Returns: {
+          delta: number
+          outcome: string
+          product_id: string
+        }[]
+      }
+      _apply_stock_damaged: {
+        Args: { p_payload: Json }
+        Returns: {
+          outcome: string
+          product_id: string
+          qty: number
+        }[]
+      }
+      _apply_stock_transferred: {
+        Args: { p_payload: Json }
+        Returns: {
+          outcome: string
+          product_id: string
+          qty: number
+        }[]
+      }
       _avg_landed_unit: { Args: { p_product_id: string }; Returns: number }
       _fee_for_line: {
         Args: {
@@ -1986,6 +2091,16 @@ export type Database = {
         }
         Returns: string
       }
+      get_simulator_config: { Args: { p_key: string }; Returns: Json }
+      outbox_claim_batch: {
+        Args: { p_limit?: number }
+        Returns: {
+          aggregate_id: string
+          event_type: string
+          id: number
+          payload: Json
+        }[]
+      }
       outbox_deliver_batch: {
         Args: { p_limit?: number }
         Returns: {
@@ -1995,9 +2110,20 @@ export type Database = {
           payload: Json
         }[]
       }
+      outbox_mark_delivered: { Args: { p_id: number }; Returns: undefined }
       outbox_mark_failed: {
         Args: { p_error: string; p_id: number; p_max_attempts?: number }
         Returns: string
+      }
+      process_erp_event: {
+        Args: {
+          p_channel_id: string
+          p_event_type: string
+          p_external_event_id: string
+          p_payload: Json
+          p_signature_valid: boolean
+        }
+        Returns: Json
       }
       process_order_event: {
         Args: {
@@ -2032,21 +2158,32 @@ export type Database = {
         }
         Returns: string
       }
-      resolve_reconciliation_finding: {
-        Args: { p_finding_id: number }
-        Returns: Json
-      }
+      resolve_findings_with_no_drift: { Args: never; Returns: number }
+      resolve_reconciliation_finding:
+        | { Args: { p_finding_id: number }; Returns: Json }
+        | {
+            Args: { p_finding_id: number; p_note?: string; p_strategy?: string }
+            Returns: Json
+          }
       retry_webhook_event: {
         Args: { p_event_id: string; p_location_id: string }
         Returns: Json
       }
       run_reconciliation: { Args: never; Returns: string }
+      set_simulator_config: {
+        Args: { p_key: string; p_value: Json }
+        Returns: undefined
+      }
       ship_order: {
         Args: { p_location_id: string; p_order_id: string }
         Returns: undefined
       }
       skew_channel_report: {
         Args: { p_channel_id: string; p_delta: number; p_sku: string }
+        Returns: Json
+      }
+      skew_erp_report: {
+        Args: { p_delta: number; p_location: string; p_sku: string }
         Returns: Json
       }
       upsert_reorder_point: {

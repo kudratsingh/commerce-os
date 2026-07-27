@@ -3,17 +3,19 @@ import { z } from "zod";
 
 import { requireOpsSecret } from "@/lib/auth/ops-secret";
 import { createSupabaseServer } from "@/lib/db/server";
-import { resolveFinding } from "@/lib/domain/reconciliation";
 
 const bodySchema = z.object({
-  finding_id: z.number().int().positive(),
-  strategy: z.enum(["ack", "accept_source"]).default("ack"),
-  note: z.string().max(500).optional(),
+  hostile_rate: z.number().min(0).max(1),
 });
 
 /**
- * POST /api/reconciliation/resolve — marks a finding resolved so it drops
- * out of `open_findings`. Auditable — the row itself is preserved.
+ * POST /api/simulator/hostile — chaos "Hostile mode" slider.
+ *
+ * Writes `simulator_config.hostile_rate` (0..1). SimulatedTikTokAdapter
+ * rolls against this value on every updateInventory call and throws a
+ * retryable 429-shape error when it loses. The outbox sweeper's
+ * exponential backoff is thus demonstrable live: set 0.3 → fire a burst →
+ * watch a subset of rows retry → set back to 0 → next sweep drains the DLQ.
  */
 export async function POST(req: Request): Promise<Response> {
   const auth = requireOpsSecret(req);
@@ -34,18 +36,16 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   const db = createSupabaseServer();
-  try {
-    const outcome = await resolveFinding(
-      db,
-      parsed.data.finding_id,
-      parsed.data.strategy,
-      parsed.data.note,
-    );
-    return NextResponse.json(outcome, { status: 200 });
-  } catch (err) {
+  const { error } = await db.rpc("set_simulator_config", {
+    p_key: "hostile_rate",
+    p_value: parsed.data.hostile_rate,
+  });
+  if (error) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "resolve failed" },
+      { error: `set_simulator_config failed: ${error.message}` },
       { status: 500 },
     );
   }
+
+  return NextResponse.json({ hostile_rate: parsed.data.hostile_rate }, { status: 200 });
 }

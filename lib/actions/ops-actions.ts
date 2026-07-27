@@ -1,6 +1,7 @@
 "use server";
 
 import { POST as retryDlqRoute } from "@/app/api/dlq/retry/route";
+import { POST as sweepOutboxRoute } from "@/app/api/jobs/outbox-sweep/route";
 import { POST as nlQueryRoute } from "@/app/api/nl-query/route";
 import { POST as closePORoute } from "@/app/api/purchase-orders/[id]/close/route";
 import { POST as receivePORoute } from "@/app/api/purchase-orders/[id]/receive/route";
@@ -9,6 +10,7 @@ import { POST as resolveFindingRoute } from "@/app/api/reconciliation/resolve/ro
 import { POST as runReconciliationRoute } from "@/app/api/reconciliation/run/route";
 import { POST as upsertReorderPointRoute } from "@/app/api/reorder-points/route";
 import { POST as fireScenarioRoute } from "@/app/api/simulator/fire/route";
+import { POST as hostileRateRoute } from "@/app/api/simulator/hostile/route";
 import { POST as skewChannelRoute } from "@/app/api/simulator/skew/route";
 import { serverEnv } from "@/lib/domain/env";
 
@@ -125,6 +127,53 @@ export async function skewChannelAction(
   });
 }
 
+export interface HostileResponse {
+  hostile_rate?: number;
+  error?: string;
+}
+
+export async function setHostileRateAction(
+  hostile_rate: number,
+): Promise<RouteResult<HostileResponse>> {
+  return callRoute<HostileResponse>(hostileRateRoute, "/api/simulator/hostile", {
+    hostile_rate,
+  });
+}
+
+/**
+ * Manually drain the outbox from the UI. Uses the CRON secret (not the
+ * ops secret) because the sweep endpoint's contract is "the cron worker
+ * calls me"; from the ops UI we're doing what the cron would do.
+ */
+export interface SweepResponse {
+  claimed?: number;
+  delivered?: number;
+  retryable?: number;
+  dead?: number;
+  permanent?: number;
+  elapsed_ms?: number;
+  error?: string;
+}
+
+export async function sweepOutboxAction(): Promise<RouteResult<SweepResponse>> {
+  const env = serverEnv();
+  const req = new Request("http://internal/api/jobs/outbox-sweep", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-cron-secret": env.WEBHOOK_SHARED_SECRET,
+    },
+  });
+  const res = await sweepOutboxRoute(req);
+  let body: SweepResponse;
+  try {
+    body = (await res.json()) as SweepResponse;
+  } catch {
+    body = { error: await res.text() };
+  }
+  return { status: res.status, body };
+}
+
 // ----------------------------------------------------------------------------
 // Reconciliation
 // ----------------------------------------------------------------------------
@@ -141,14 +190,19 @@ export async function runReconciliationAction(): Promise<RouteResult<RunReconRes
 export interface ResolveFindingResponse {
   outcome?: string;
   finding_id?: number;
+  strategy?: "ack" | "accept_source";
   error?: string;
 }
 
 export async function resolveFindingAction(
   finding_id: number,
+  strategy: "ack" | "accept_source" = "ack",
+  note?: string,
 ): Promise<RouteResult<ResolveFindingResponse>> {
   return callRoute<ResolveFindingResponse>(resolveFindingRoute, "/api/reconciliation/resolve", {
     finding_id,
+    strategy,
+    note,
   });
 }
 

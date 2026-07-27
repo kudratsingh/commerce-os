@@ -1,28 +1,41 @@
 import { NextResponse } from "next/server";
 
+import { getMarketplaceAdapter } from "@/lib/adapters/registry";
+import { AdapterRetryableError } from "@/lib/adapters/marketplace-adapter";
 import { createSupabaseServer } from "@/lib/db/server";
 import { serverEnv } from "@/lib/domain/env";
-import { deliverOutboxBatch } from "@/lib/domain/outbox";
+import {
+  claimOutboxBatch,
+  markOutboxDelivered,
+  markOutboxFailed,
+  parseInventorySyncPayload,
+} from "@/lib/domain/outbox";
 
 /**
- * POST /api/jobs/outbox-sweep — re-entrant outbox sweeper.
+ * POST /api/jobs/outbox-sweep — re-entrant outbox sweeper (ADR-010).
  *
- * Called two ways:
- *   1. Cloudflare Cron Trigger (1/min) — a small separate Worker in
- *      `cron-worker/` handles the schedule and POSTs here with the shared
- *      secret. See cron-worker/README.md for the deploy story.
- *   2. Manual "Run Now" button on the ops dashboard.
+ * Two-phase pattern: claim a batch (rows flip to `in_flight` under
+ * FOR UPDATE SKIP LOCKED), dispatch each through the MarketplaceAdapter port
+ * for its `event_type`, then mark delivered/failed based on the wire result.
+ * Retry curve + DLQ come from `outbox_mark_failed` (migration 003).
  *
- * Safe under overlapping firings: `outbox_deliver_batch` claims rows with
- * FOR UPDATE SKIP LOCKED and marks them delivered atomically. Delivery is a
- * no-op for the demo — the returned rows are the demonstration that we
- * would fanout here (analytics, Slack, marketplace ack) in production.
+ * Two firing modes:
+ *   1. Cloudflare Cron Trigger (1/min) — cron-worker/ POSTs with the secret.
+ *   2. Manual "Sweep now" button on /simulator.
  *
- * Guarded by a shared secret so a stray outside call can't drain the queue
- * (matches the pattern the real cron will use).
+ * Called under Cloudflare Access via the internal route-handler bypass
+ * pattern (PR #7): direct import + call is safe from a co-located server
+ * action or another route handler.
  */
 
 const BATCH_LIMIT = 100;
+
+interface DispatchOutcome {
+  id: number;
+  event_type: string;
+  status: "delivered" | "retryable" | "dead" | "permanent";
+  reason?: string;
+}
 
 export async function POST(req: Request): Promise<Response> {
   const env = serverEnv();
@@ -33,16 +46,91 @@ export async function POST(req: Request): Promise<Response> {
 
   const db = createSupabaseServer();
   const startedAt = Date.now();
-  const delivered = await deliverOutboxBatch(db, BATCH_LIMIT);
+  const claimed = await claimOutboxBatch(db, BATCH_LIMIT);
+
+  const outcomes: DispatchOutcome[] = [];
+
+  for (const row of claimed) {
+    try {
+      if (row.event_type === "inventory.sync") {
+        const payload = parseInventorySyncPayload(row.payload);
+        if (!payload) {
+          await markOutboxFailed(db, row.id, "invalid inventory.sync payload");
+          outcomes.push({
+            id: row.id,
+            event_type: row.event_type,
+            status: "permanent",
+            reason: "invalid payload",
+          });
+          continue;
+        }
+
+        const adapter = getMarketplaceAdapter(db, payload.channel_id);
+        if (!adapter) {
+          await markOutboxFailed(
+            db,
+            row.id,
+            `no adapter bound for channel ${payload.channel_id}`,
+          );
+          outcomes.push({
+            id: row.id,
+            event_type: row.event_type,
+            status: "permanent",
+            reason: "no adapter",
+          });
+          continue;
+        }
+
+        await adapter.updateInventory({
+          productId: payload.product_id,
+          correctQty: payload.correct_qty,
+        });
+        await markOutboxDelivered(db, row.id);
+        outcomes.push({
+          id: row.id,
+          event_type: row.event_type,
+          status: "delivered",
+        });
+      } else {
+        // Non-external events: nothing to dispatch, just mark delivered.
+        // Order/lifecycle events (order.received, po.closed, etc.) are here
+        // for downstream analytics and don't hit an external wire — same
+        // no-op the old deliver_batch did.
+        await markOutboxDelivered(db, row.id);
+        outcomes.push({
+          id: row.id,
+          event_type: row.event_type,
+          status: "delivered",
+        });
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const retryable = err instanceof AdapterRetryableError;
+      const status = await markOutboxFailed(db, row.id, message);
+      outcomes.push({
+        id: row.id,
+        event_type: row.event_type,
+        status: status === "dead" ? "dead" : retryable ? "retryable" : "permanent",
+        reason: message,
+      });
+    }
+  }
+
+  const delivered = outcomes.filter((o) => o.status === "delivered");
+  const summary = {
+    claimed: claimed.length,
+    delivered: delivered.length,
+    retryable: outcomes.filter((o) => o.status === "retryable").length,
+    dead: outcomes.filter((o) => o.status === "dead").length,
+    permanent: outcomes.filter((o) => o.status === "permanent").length,
+    // Aliases kept for the pre-existing outbox integration test — new
+    // callers should read `delivered` (count) and `outcomes` (per-row).
+    delivered_count: delivered.length,
+    event_types: delivered.map((d) => d.event_type),
+  };
 
   return NextResponse.json(
-    {
-      delivered_count: delivered.length,
-      elapsed_ms: Date.now() - startedAt,
-      // Return the event_types (not full payloads) so an operator running
-      // this manually can see what just went out without leaking large blobs.
-      event_types: delivered.map((d) => d.event_type),
-    },
+    { ...summary, elapsed_ms: Date.now() - startedAt, outcomes },
     { status: 200 },
   );
 }

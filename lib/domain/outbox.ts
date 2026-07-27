@@ -58,3 +58,55 @@ export async function markOutboxFailed(
   }
   return data;
 }
+
+/**
+ * Two-phase claim: atomically flip a batch to `in_flight` and return them
+ * so the sweeper can dispatch to an external handler (marketplace adapter)
+ * and then mark delivered/failed after the wire call returns. Migration 012.
+ */
+export async function claimOutboxBatch(
+  db: Db,
+  limit = 50,
+): Promise<OutboxDelivery[]> {
+  const { data, error } = await db.rpc("outbox_claim_batch", {
+    p_limit: limit,
+  });
+  if (error) {
+    throw new Error(`outbox_claim_batch failed: ${error.message}`);
+  }
+  const parsed = outboxDeliveryListSchema.safeParse(data ?? []);
+  if (!parsed.success) {
+    throw new Error(
+      `outbox_claim_batch returned unexpected shape: ${parsed.error.message}`,
+    );
+  }
+  return parsed.data;
+}
+
+export async function markOutboxDelivered(db: Db, id: number): Promise<void> {
+  const { error } = await db.rpc("outbox_mark_delivered", { p_id: id });
+  if (error) {
+    throw new Error(`outbox_mark_delivered failed: ${error.message}`);
+  }
+}
+
+/**
+ * Payload shape for `inventory.sync` events (both sync-on-change and
+ * reconciliation-push emit this shape).
+ */
+const inventorySyncPayloadSchema = z.object({
+  channel_id: z.string(),
+  product_id: z.string().uuid(),
+  correct_qty: z.number().int(),
+  source: z.enum(["stock_change", "reconciliation"]).optional(),
+  finding_id: z.number().int().optional(),
+});
+
+export type InventorySyncPayload = z.infer<typeof inventorySyncPayloadSchema>;
+
+export function parseInventorySyncPayload(
+  raw: unknown,
+): InventorySyncPayload | null {
+  const parsed = inventorySyncPayloadSchema.safeParse(raw);
+  return parsed.success ? parsed.data : null;
+}
