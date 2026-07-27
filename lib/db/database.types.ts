@@ -584,6 +584,13 @@ export type Database = {
             foreignKeyName: "reconciliation_findings_run_id_fkey"
             columns: ["run_id"]
             isOneToOne: false
+            referencedRelation: "recent_recon_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reconciliation_findings_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
             referencedRelation: "reconciliation_runs"
             referencedColumns: ["id"]
           },
@@ -925,6 +932,69 @@ export type Database = {
         }
         Relationships: []
       }
+      open_findings: {
+        Row: {
+          actual: number | null
+          brand_name: string | null
+          channel_id: string | null
+          created_at: string | null
+          delta: number | null
+          expected: number | null
+          id: number | null
+          kind: string | null
+          location_id: string | null
+          location_name: string | null
+          product_id: string | null
+          run_id: string | null
+          sku: string | null
+          status: string | null
+          title: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reconciliation_findings_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reconciliation_findings_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reconciliation_findings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reconciliation_findings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "stock_dashboard"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "reconciliation_findings_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "recent_recon_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reconciliation_findings_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "reconciliation_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recent_orders: {
         Row: {
           brand_id: string | null
@@ -961,6 +1031,16 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      recent_recon_runs: {
+        Row: {
+          elapsed_ms: number | null
+          findings_count: number | null
+          finished_at: string | null
+          id: string | null
+          started_at: string | null
+        }
+        Relationships: []
       }
       stock_dashboard: {
         Row: {
@@ -1045,6 +1125,10 @@ export type Database = {
         }
         Returns: string
       }
+      resolve_reconciliation_finding: {
+        Args: { p_finding_id: number }
+        Returns: Json
+      }
       retry_webhook_event: {
         Args: { p_event_id: string; p_location_id: string }
         Returns: Json
@@ -1053,6 +1137,10 @@ export type Database = {
       ship_order: {
         Args: { p_location_id: string; p_order_id: string }
         Returns: undefined
+      }
+      skew_channel_report: {
+        Args: { p_channel_id: string; p_delta: number; p_sku: string }
+        Returns: Json
       }
     }
     Enums: {
