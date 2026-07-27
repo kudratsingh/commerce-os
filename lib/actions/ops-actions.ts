@@ -2,8 +2,12 @@
 
 import { POST as retryDlqRoute } from "@/app/api/dlq/retry/route";
 import { POST as nlQueryRoute } from "@/app/api/nl-query/route";
+import { POST as closePORoute } from "@/app/api/purchase-orders/[id]/close/route";
+import { POST as receivePORoute } from "@/app/api/purchase-orders/[id]/receive/route";
+import { POST as createPORoute } from "@/app/api/purchase-orders/route";
 import { POST as resolveFindingRoute } from "@/app/api/reconciliation/resolve/route";
 import { POST as runReconciliationRoute } from "@/app/api/reconciliation/run/route";
+import { POST as upsertReorderPointRoute } from "@/app/api/reorder-points/route";
 import { POST as fireScenarioRoute } from "@/app/api/simulator/fire/route";
 import { POST as skewChannelRoute } from "@/app/api/simulator/skew/route";
 import { serverEnv } from "@/lib/domain/env";
@@ -45,6 +49,35 @@ async function callRoute<T>(
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   const res = await handler(req);
+  let parsed: T;
+  try {
+    parsed = (await res.json()) as T;
+  } catch {
+    parsed = (await res.text()) as unknown as T;
+  }
+  return { status: res.status, body: parsed };
+}
+
+/**
+ * Wrapper for routes that need URL params (path-based, e.g. /po/[id]/…).
+ * Handler expects `ctx.params` — we pass a Promise for parity with Next 15.
+ */
+async function callRouteWithParams<T>(
+  handler: (req: Request, ctx: { params: Promise<{ id: string }> }) => Promise<Response>,
+  path: string,
+  id: string,
+  body?: unknown,
+): Promise<RouteResult<T>> {
+  const env = serverEnv();
+  const req = new Request(`http://internal${path}`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-ops-secret": env.OPS_SHARED_SECRET,
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const res = await handler(req, { params: Promise.resolve({ id }) });
   let parsed: T;
   try {
     parsed = (await res.json()) as T;
@@ -154,4 +187,94 @@ export async function askNlQueryAction(
   question: string,
 ): Promise<RouteResult<NlQueryResponse>> {
   return callRoute<NlQueryResponse>(nlQueryRoute, "/api/nl-query", { question });
+}
+
+// ----------------------------------------------------------------------------
+// Purchasing (Module 1 M1-B/C/D)
+// ----------------------------------------------------------------------------
+
+export interface CreatePOInput {
+  brand_id: string;
+  supplier_id: string;
+  expected_at?: string | null;
+  lines: Array<{ product_id: string; qty_ordered: number; unit_cost_cents: number }>;
+}
+
+export interface CreatePOResponse {
+  po_id?: string;
+  error?: string;
+}
+
+export async function createPurchaseOrderAction(
+  input: CreatePOInput,
+): Promise<RouteResult<CreatePOResponse>> {
+  return callRoute<CreatePOResponse>(createPORoute, "/api/purchase-orders", input);
+}
+
+export interface ReceiveShipmentInput {
+  po_line_id: string;
+  qty: number;
+  unit_cost_cents: number;
+  duties_cents?: number;
+  freight_cents?: number;
+  handling_cents?: number;
+}
+
+export interface ReceiveShipmentResponse {
+  receipt_id?: string;
+  po_id?: string;
+  error?: string;
+}
+
+export async function receiveShipmentAction(
+  poId: string,
+  input: ReceiveShipmentInput,
+): Promise<RouteResult<ReceiveShipmentResponse>> {
+  return callRouteWithParams<ReceiveShipmentResponse>(
+    receivePORoute,
+    `/api/purchase-orders/${poId}/receive`,
+    poId,
+    input,
+  );
+}
+
+export interface CloseOrderResponse {
+  outcome?: "closed" | "already_closed";
+  previous_status?: string;
+  error?: string;
+}
+
+export async function closePurchaseOrderAction(
+  poId: string,
+  reason?: string,
+): Promise<RouteResult<CloseOrderResponse>> {
+  return callRouteWithParams<CloseOrderResponse>(
+    closePORoute,
+    `/api/purchase-orders/${poId}/close`,
+    poId,
+    reason ? { reason } : undefined,
+  );
+}
+
+export interface UpsertReorderPointInput {
+  product_id: string;
+  min_qty: number;
+  target_qty: number;
+  location_id?: string;
+  velocity_window_days?: number;
+}
+
+export interface UpsertReorderPointResponse {
+  outcome?: "saved";
+  error?: string;
+}
+
+export async function upsertReorderPointAction(
+  input: UpsertReorderPointInput,
+): Promise<RouteResult<UpsertReorderPointResponse>> {
+  return callRoute<UpsertReorderPointResponse>(
+    upsertReorderPointRoute,
+    "/api/reorder-points",
+    input,
+  );
 }

@@ -1812,6 +1812,34 @@ export type Database = {
         }
         Relationships: []
       }
+      replenishment_alerts: {
+        Row: {
+          available: number | null
+          brand_id: string | null
+          brand_name: string | null
+          committed: number | null
+          days_of_cover: number | null
+          location_id: string | null
+          location_name: string | null
+          min_qty: number | null
+          on_hand: number | null
+          primary_lead_time_days: number | null
+          primary_moq: number | null
+          primary_supplier_id: string | null
+          primary_supplier_name: string | null
+          primary_unit_cost_cents: number | null
+          product_id: string | null
+          recommended_qty: number | null
+          sku: string | null
+          target_qty: number | null
+          title: string | null
+          units_shipped_window: number | null
+          urgency: string | null
+          velocity_per_day: number | null
+          velocity_window: string | null
+        }
+        Relationships: []
+      }
       sku_margin_by_channel: {
         Row: {
           avg_fee_cents: number | null
@@ -1893,6 +1921,21 @@ export type Database = {
           outcome: string
         }[]
       }
+      _avg_landed_unit: { Args: { p_product_id: string }; Returns: number }
+      _fee_for_line: {
+        Args: {
+          p_at: string
+          p_brand_id: string
+          p_channel_id: string
+          p_gross_cents: number
+          p_product_id: string
+        }
+        Returns: number
+      }
+      _write_margin_snapshot: {
+        Args: { p_order_line_id: string }
+        Returns: undefined
+      }
       allocate_order: {
         Args: { p_location_id: string; p_order_id: string }
         Returns: string
@@ -1900,6 +1943,48 @@ export type Database = {
       cancel_order: {
         Args: { p_location_id: string; p_order_id: string }
         Returns: undefined
+      }
+      close_purchase_order: {
+        Args: { p_po_id: string; p_reason?: string }
+        Returns: Json
+      }
+      compute_reorder_signals: {
+        Args: { p_brand_id?: string; p_location_id: string }
+        Returns: {
+          available: number
+          brand_id: string
+          brand_name: string
+          committed: number
+          days_of_cover: number
+          location_id: string
+          location_name: string
+          min_qty: number
+          on_hand: number
+          primary_lead_time_days: number
+          primary_moq: number
+          primary_supplier_id: string
+          primary_supplier_name: string
+          primary_unit_cost_cents: number
+          product_id: string
+          recommended_qty: number
+          sku: string
+          target_qty: number
+          title: string
+          units_shipped_window: number
+          urgency: string
+          velocity_per_day: number
+          velocity_window: string
+        }[]
+      }
+      create_purchase_order: {
+        Args: {
+          p_brand_id: string
+          p_created_by?: string
+          p_expected_at?: string
+          p_lines?: Json
+          p_supplier_id: string
+        }
+        Returns: string
       }
       outbox_deliver_batch: {
         Args: { p_limit?: number }
@@ -1934,6 +2019,19 @@ export type Database = {
         }
         Returns: string
       }
+      receive_shipment: {
+        Args: {
+          p_duties_cents?: number
+          p_freight_cents?: number
+          p_handling_cents?: number
+          p_location_id: string
+          p_po_line_id: string
+          p_qty: number
+          p_received_by?: string
+          p_unit_cost_cents: number
+        }
+        Returns: string
+      }
       resolve_reconciliation_finding: {
         Args: { p_finding_id: number }
         Returns: Json
@@ -1949,6 +2047,16 @@ export type Database = {
       }
       skew_channel_report: {
         Args: { p_channel_id: string; p_delta: number; p_sku: string }
+        Returns: Json
+      }
+      upsert_reorder_point: {
+        Args: {
+          p_location_id: string
+          p_min_qty: number
+          p_product_id: string
+          p_target_qty: number
+          p_velocity_window?: string
+        }
         Returns: Json
       }
     }
