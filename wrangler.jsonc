@@ -17,5 +17,13 @@
   "observability": {
     "enabled": true
   }
-  // "triggers": { "crons": ["* * * * *"] }   // enabled Day 2 with the outbox sweeper
+
+  // Cron Trigger for the outbox sweeper is intentionally deferred to Day 4.
+  // The route (POST /api/jobs/outbox-sweep) works today via manual HTTP;
+  // the Day-4 dashboard adds a "Run Now" button pointing at the same route.
+  // The final wiring to a Workers `scheduled()` handler ships in the same
+  // PR as the UI so both invocation paths land together:
+  //   "triggers": { "crons": ["* * * * *"] }
+  // + custom worker entrypoint that fetch()es /api/jobs/outbox-sweep with
+  //   the x-cron-secret header this route already enforces.
 }

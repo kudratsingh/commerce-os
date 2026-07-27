@@ -1,0 +1,951 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  public: {
+    Tables: {
+      brands: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      channel_inventory_reports: {
+        Row: {
+          channel_id: string
+          id: number
+          product_id: string
+          reported_at: string
+          reported_qty: number
+        }
+        Insert: {
+          channel_id: string
+          id?: never
+          product_id: string
+          reported_at?: string
+          reported_qty: number
+        }
+        Update: {
+          channel_id?: string
+          id?: never
+          product_id?: string
+          reported_at?: string
+          reported_qty?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_inventory_reports_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_inventory_reports_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      channel_listings: {
+        Row: {
+          active: boolean
+          channel_id: string
+          external_sku: string
+          id: string
+          product_id: string
+        }
+        Insert: {
+          active?: boolean
+          channel_id: string
+          external_sku: string
+          id?: string
+          product_id: string
+        }
+        Update: {
+          active?: boolean
+          channel_id?: string
+          external_sku?: string
+          id?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_listings_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_listings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      channels: {
+        Row: {
+          display_name: string
+          id: string
+        }
+        Insert: {
+          display_name: string
+          id: string
+        }
+        Update: {
+          display_name?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      locations: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      order_lines: {
+        Row: {
+          id: string
+          order_id: string
+          product_id: string
+          qty: number
+          unit_price_cents: number
+        }
+        Insert: {
+          id?: string
+          order_id: string
+          product_id: string
+          qty: number
+          unit_price_cents: number
+        }
+        Update: {
+          id?: string
+          order_id?: string
+          product_id?: string
+          qty?: number
+          unit_price_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_lines_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_lines_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          brand_id: string
+          buyer_handle: string | null
+          channel_id: string
+          created_at: string
+          external_order_id: string
+          id: string
+          placed_at: string
+          raw_payload: Json | null
+          status: string
+          subtotal_cents: number
+        }
+        Insert: {
+          brand_id: string
+          buyer_handle?: string | null
+          channel_id: string
+          created_at?: string
+          external_order_id: string
+          id?: string
+          placed_at: string
+          raw_payload?: Json | null
+          status?: string
+          subtotal_cents?: number
+        }
+        Update: {
+          brand_id?: string
+          buyer_handle?: string | null
+          channel_id?: string
+          created_at?: string
+          external_order_id?: string
+          id?: string
+          placed_at?: string
+          raw_payload?: Json | null
+          status?: string
+          subtotal_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outbox: {
+        Row: {
+          aggregate_id: string | null
+          aggregate_type: string
+          attempts: number
+          created_at: string
+          delivered_at: string | null
+          event_type: string
+          id: number
+          last_error: string | null
+          next_attempt_at: string
+          payload: Json
+          status: string
+        }
+        Insert: {
+          aggregate_id?: string | null
+          aggregate_type: string
+          attempts?: number
+          created_at?: string
+          delivered_at?: string | null
+          event_type: string
+          id?: never
+          last_error?: string | null
+          next_attempt_at?: string
+          payload: Json
+          status?: string
+        }
+        Update: {
+          aggregate_id?: string | null
+          aggregate_type?: string
+          attempts?: number
+          created_at?: string
+          delivered_at?: string | null
+          event_type?: string
+          id?: never
+          last_error?: string | null
+          next_attempt_at?: string
+          payload?: Json
+          status?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          brand_id: string
+          cost_cents: number
+          created_at: string
+          id: string
+          price_cents: number
+          sku: string
+          title: string
+        }
+        Insert: {
+          brand_id: string
+          cost_cents: number
+          created_at?: string
+          id?: string
+          price_cents: number
+          sku: string
+          title: string
+        }
+        Update: {
+          brand_id?: string
+          cost_cents?: number
+          created_at?: string
+          id?: string
+          price_cents?: number
+          sku?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_order_lines: {
+        Row: {
+          id: string
+          product_id: string
+          purchase_order_id: string
+          qty_ordered: number
+          unit_cost_cents: number
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          purchase_order_id: string
+          qty_ordered: number
+          unit_cost_cents: number
+        }
+        Update: {
+          id?: string
+          product_id?: string
+          purchase_order_id?: string
+          qty_ordered?: number
+          unit_cost_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_lines_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_lines_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_orders: {
+        Row: {
+          brand_id: string
+          created_at: string
+          expected_at: string | null
+          id: string
+          status: string
+          supplier: string
+        }
+        Insert: {
+          brand_id: string
+          created_at?: string
+          expected_at?: string | null
+          id?: string
+          status?: string
+          supplier: string
+        }
+        Update: {
+          brand_id?: string
+          created_at?: string
+          expected_at?: string | null
+          id?: string
+          status?: string
+          supplier?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      receipts: {
+        Row: {
+          id: string
+          location_id: string
+          purchase_order_line_id: string
+          qty_received: number
+          received_at: string
+          received_by: string
+        }
+        Insert: {
+          id?: string
+          location_id: string
+          purchase_order_line_id: string
+          qty_received: number
+          received_at?: string
+          received_by?: string
+        }
+        Update: {
+          id?: string
+          location_id?: string
+          purchase_order_line_id?: string
+          qty_received?: number
+          received_at?: string
+          received_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipts_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipts_purchase_order_line_id_fkey"
+            columns: ["purchase_order_line_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_order_lines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reconciliation_findings: {
+        Row: {
+          actual: number
+          channel_id: string | null
+          created_at: string
+          delta: number
+          expected: number
+          id: number
+          kind: string
+          location_id: string | null
+          product_id: string
+          run_id: string
+          status: string
+        }
+        Insert: {
+          actual: number
+          channel_id?: string | null
+          created_at?: string
+          delta: number
+          expected: number
+          id?: never
+          kind: string
+          location_id?: string | null
+          product_id: string
+          run_id: string
+          status?: string
+        }
+        Update: {
+          actual?: number
+          channel_id?: string | null
+          created_at?: string
+          delta?: number
+          expected?: number
+          id?: never
+          kind?: string
+          location_id?: string | null
+          product_id?: string
+          run_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reconciliation_findings_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reconciliation_findings_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reconciliation_findings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reconciliation_findings_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "reconciliation_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reconciliation_runs: {
+        Row: {
+          findings_count: number | null
+          finished_at: string | null
+          id: string
+          started_at: string
+        }
+        Insert: {
+          findings_count?: number | null
+          finished_at?: string | null
+          id?: string
+          started_at?: string
+        }
+        Update: {
+          findings_count?: number | null
+          finished_at?: string | null
+          id?: string
+          started_at?: string
+        }
+        Relationships: []
+      }
+      stock_levels: {
+        Row: {
+          committed: number
+          location_id: string
+          on_hand: number
+          product_id: string
+        }
+        Insert: {
+          committed?: number
+          location_id: string
+          on_hand?: number
+          product_id: string
+        }
+        Update: {
+          committed?: number
+          location_id?: string
+          on_hand?: number
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_levels_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_levels_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_movements: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: number
+          location_id: string
+          note: string | null
+          product_id: string
+          qty_delta: number
+          reason: string
+          ref_id: string | null
+          ref_type: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          id?: never
+          location_id: string
+          note?: string | null
+          product_id: string
+          qty_delta: number
+          reason: string
+          ref_id?: string | null
+          ref_type?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: never
+          location_id?: string
+          note?: string | null
+          product_id?: string
+          qty_delta?: number
+          reason?: string
+          ref_id?: string | null
+          ref_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_events: {
+        Row: {
+          attempts: number
+          channel_id: string
+          event_type: string
+          external_event_id: string
+          id: string
+          last_error: string | null
+          payload: Json
+          processed_at: string | null
+          received_at: string
+          signature_valid: boolean
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          channel_id: string
+          event_type: string
+          external_event_id: string
+          id?: string
+          last_error?: string | null
+          payload: Json
+          processed_at?: string | null
+          received_at?: string
+          signature_valid: boolean
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          channel_id?: string
+          event_type?: string
+          external_event_id?: string
+          id?: string
+          last_error?: string | null
+          payload?: Json
+          processed_at?: string | null
+          received_at?: string
+          signature_valid?: boolean
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_events_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      available_to_sell: {
+        Row: {
+          available: number | null
+          product_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_levels_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      current_stock_from_ledger: {
+        Row: {
+          location_id: string | null
+          on_hand_ledger: number | null
+          product_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gmv_today: {
+        Row: {
+          brand_id: string | null
+          channel_id: string | null
+          gmv_cents: number | null
+          orders_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Functions: {
+      _apply_order_cancelled: {
+        Args: { p_channel_id: string; p_location_id: string; p_payload: Json }
+        Returns: {
+          order_id: string
+          outcome: string
+        }[]
+      }
+      _apply_order_created: {
+        Args: { p_channel_id: string; p_location_id: string; p_payload: Json }
+        Returns: {
+          order_id: string
+          outcome: string
+        }[]
+      }
+      allocate_order: {
+        Args: { p_location_id: string; p_order_id: string }
+        Returns: string
+      }
+      cancel_order: {
+        Args: { p_location_id: string; p_order_id: string }
+        Returns: undefined
+      }
+      outbox_deliver_batch: {
+        Args: { p_limit?: number }
+        Returns: {
+          aggregate_id: string
+          event_type: string
+          id: number
+          payload: Json
+        }[]
+      }
+      outbox_mark_failed: {
+        Args: { p_error: string; p_id: number; p_max_attempts?: number }
+        Returns: string
+      }
+      process_order_event: {
+        Args: {
+          p_channel_id: string
+          p_event_type: string
+          p_external_event_id: string
+          p_location_id: string
+          p_payload: Json
+          p_signature_valid: boolean
+        }
+        Returns: Json
+      }
+      receive_po_line: {
+        Args: {
+          p_by?: string
+          p_location_id: string
+          p_po_line_id: string
+          p_qty: number
+        }
+        Returns: string
+      }
+      run_reconciliation: { Args: never; Returns: string }
+      ship_order: {
+        Args: { p_location_id: string; p_order_id: string }
+        Returns: undefined
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
+  public: {
+    Enums: {},
+  },
+} as const
+

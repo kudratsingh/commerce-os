@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // OpenNext build output — generated Worker bundle, not our code.
+    ".open-next/**",
+    // Generated Supabase types.
+    "lib/db/database.types.ts",
   ]),
 ]);
 
