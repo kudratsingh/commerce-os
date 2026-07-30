@@ -14,6 +14,7 @@ export interface CreatorRow {
   platform: string;
   display_name: string | null;
   contact_email: string | null;
+  contact_phone: string | null;
   base_country: string | null;
   primary_categories: string[];
   follower_count: number | null;
@@ -36,7 +37,7 @@ export async function getCreators(
   let q = db
     .from("creators")
     .select(
-      "id, handle, platform, display_name, contact_email, base_country, primary_categories, follower_count, engagement_rate, status, first_contacted_at, became_active_at, created_at",
+      "id, handle, platform, display_name, contact_email, contact_phone, base_country, primary_categories, follower_count, engagement_rate, status, first_contacted_at, became_active_at, created_at",
     );
 
   if (filter.status) {
@@ -62,6 +63,7 @@ export async function getCreators(
     platform: r.platform ?? "",
     display_name: r.display_name ?? null,
     contact_email: r.contact_email ?? null,
+    contact_phone: r.contact_phone ?? null,
     base_country: r.base_country ?? null,
     primary_categories: (r.primary_categories ?? []) as string[],
     follower_count: r.follower_count,
@@ -77,7 +79,7 @@ export async function getCreatorById(db: Db, id: string): Promise<CreatorRow | n
   const { data, error } = await db
     .from("creators")
     .select(
-      "id, handle, platform, display_name, contact_email, base_country, primary_categories, follower_count, engagement_rate, status, first_contacted_at, became_active_at, created_at",
+      "id, handle, platform, display_name, contact_email, contact_phone, base_country, primary_categories, follower_count, engagement_rate, status, first_contacted_at, became_active_at, created_at",
     )
     .eq("id", id)
     .maybeSingle();
@@ -89,6 +91,7 @@ export async function getCreatorById(db: Db, id: string): Promise<CreatorRow | n
     platform: data.platform ?? "",
     display_name: data.display_name ?? null,
     contact_email: data.contact_email ?? null,
+    contact_phone: data.contact_phone ?? null,
     base_country: data.base_country ?? null,
     primary_categories: (data.primary_categories ?? []) as string[],
     follower_count: data.follower_count,
